@@ -1,0 +1,6 @@
+@EduLearn.Enrollment.API_HostAddress = http://localhost:5116
+
+GET {{EduLearn.Enrollment.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

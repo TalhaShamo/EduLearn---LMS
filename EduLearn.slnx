@@ -1,0 +1,35 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Gateway/">
+    <Project Path="src/Gateway/EduLearn.Gateway/EduLearn.Gateway.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/" />
+  <Folder Name="/src/Services/Assessment/">
+    <Project Path="src/Services/Assessment/EduLearn.Assessment.API/EduLearn.Assessment.API.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Certificate/">
+    <Project Path="src/Services/Certificate/EduLearn.Certificate.API/EduLearn.Certificate.API.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Course/">
+    <Project Path="src/Services/Course/EduLearn.Course.API/EduLearn.Course.API.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Enrollment/">
+    <Project Path="src/Services/Enrollment/EduLearn.Enrollment.API/EduLearn.Enrollment.API.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Identity/">
+    <Project Path="src/Services/Identity/EduLearn.Identity.API/EduLearn.Identity.API.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Notification/">
+    <Project Path="src/Services/Notification/EduLearn.Notification.API/EduLearn.Notification.API.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Payment/">
+    <Project Path="src/Services/Payment/EduLearn.Payment.API/EduLearn.Payment.API.csproj" />
+  </Folder>
+  <Folder Name="/src/Shared/">
+    <Project Path="src/Shared/EduLearn.Shared/EduLearn.Shared.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/EduLearn.Assessment.Tests/EduLearn.Assessment.Tests.csproj" />
+    <Project Path="tests/EduLearn.Identity.Tests/EduLearn.Identity.Tests.csproj" />
+  </Folder>
+</Solution>

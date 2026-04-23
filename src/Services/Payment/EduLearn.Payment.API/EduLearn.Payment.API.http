@@ -1,0 +1,6 @@
+@EduLearn.Payment.API_HostAddress = http://localhost:5023
+
+GET {{EduLearn.Payment.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,225 @@
+version: '3.9'
+
+# ──────────────────────────────────────────────────────────
+#  EduLearn LMS — Docker Compose
+#  Infrastructure: SQL Server, RabbitMQ, Redis, MailHog
+#  Services: Gateway + 7 Microservices
+# ──────────────────────────────────────────────────────────
+
+networks:
+  edulearn-net:
+    driver: bridge   # All containers share this internal network
+
+services:
+
+  # ── INFRASTRUCTURE ────────────────────────────────────────
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: edulearn-sqlserver
+    environment:
+      SA_PASSWORD: "EduLearn@2024!"    # SA password (strong password required)
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"           # Free developer license
+    ports:
+      - "1433:1433"                    # Expose for local SQL tools (SSMS, Azure Data Studio)
+    volumes:
+      - sqlserver-data:/var/opt/mssql  # Persist database files between restarts
+    networks:
+      - edulearn-net
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "EduLearn@2024!", "-Q", "SELECT 1", "-No"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3.13-management    # Includes web management UI
+    container_name: edulearn-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: "edulearn"
+      RABBITMQ_DEFAULT_PASS: "edulearn123"
+    ports:
+      - "5672:5672"    # AMQP — services connect here
+      - "15672:15672"  # Management UI — http://localhost:15672
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - edulearn-net
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine              # Lightweight Redis image
+    container_name: edulearn-redis
+    ports:
+      - "6379:6379"                    # Gateway uses this for rate limiting & caching
+    volumes:
+      - redis-data:/data
+    networks:
+      - edulearn-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  mailhog:
+    image: mailhog/mailhog:latest      # Fake SMTP server — catches all emails locally
+    container_name: edulearn-mailhog
+    ports:
+      - "1025:1025"   # SMTP — MailKit sends to this port
+      - "8025:8025"   # Web UI — view emails at http://localhost:8025
+    networks:
+      - edulearn-net
+
+  # ── MICROSERVICES ─────────────────────────────────────────
+
+  gateway:
+    build:
+      context: .
+      dockerfile: src/Gateway/EduLearn.Gateway/Dockerfile
+    container_name: edulearn-gateway
+    ports:
+      - "5000:8080"    # All client requests come in here
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - edulearn-net
+
+  identity-api:
+    build:
+      context: .
+      dockerfile: src/Services/Identity/EduLearn.Identity.API/Dockerfile
+    container_name: edulearn-identity
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - edulearn-net
+
+  course-api:
+    build:
+      context: .
+      dockerfile: src/Services/Course/EduLearn.Course.API/Dockerfile
+    container_name: edulearn-course
+    ports:
+      - "5002:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    volumes:
+      - course-videos:/app/wwwroot/videos   # Persist uploaded videos
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - edulearn-net
+
+  enrollment-api:
+    build:
+      context: .
+      dockerfile: src/Services/Enrollment/EduLearn.Enrollment.API/Dockerfile
+    container_name: edulearn-enrollment
+    ports:
+      - "5003:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - edulearn-net
+
+  assessment-api:
+    build:
+      context: .
+      dockerfile: src/Services/Assessment/EduLearn.Assessment.API/Dockerfile
+    container_name: edulearn-assessment
+    ports:
+      - "5004:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - edulearn-net
+
+  payment-api:
+    build:
+      context: .
+      dockerfile: src/Services/Payment/EduLearn.Payment.API/Dockerfile
+    container_name: edulearn-payment
+    ports:
+      - "5005:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - edulearn-net
+
+  notification-api:
+    build:
+      context: .
+      dockerfile: src/Services/Notification/EduLearn.Notification.API/Dockerfile
+    container_name: edulearn-notification
+    ports:
+      - "5006:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    networks:
+      - edulearn-net
+
+  certificate-api:
+    build:
+      context: .
+      dockerfile: src/Services/Certificate/EduLearn.Certificate.API/Dockerfile
+    container_name: edulearn-certificate
+    ports:
+      - "5007:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    volumes:
+      - certificate-pdfs:/app/wwwroot/certificates  # Persist generated PDFs
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - edulearn-net
+
+# ── VOLUMES ───────────────────────────────────────────────
+volumes:
+  sqlserver-data:
+  rabbitmq-data:
+  redis-data:
+  course-videos:
+  certificate-pdfs:
