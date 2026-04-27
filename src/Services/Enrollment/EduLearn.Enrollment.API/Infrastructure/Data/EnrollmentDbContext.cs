@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using EduLearn.Enrollment.API.Domain.Entities;
+using EnrollmentEntity = EduLearn.Enrollment.API.Domain.Entities.Enrollment;
 
 namespace EduLearn.Enrollment.API.Infrastructure.Data;
 
@@ -8,12 +9,12 @@ public class EnrollmentDbContext : DbContext
 {
     public EnrollmentDbContext(DbContextOptions<EnrollmentDbContext> options) : base(options) { }
 
-    public DbSet<Enrollment>     Enrollments     => Set<Enrollment>();
+    public DbSet<EnrollmentEntity>     Enrollments     => Set<EnrollmentEntity>();
     public DbSet<LessonProgress> LessonProgresses => Set<LessonProgress>();
 
     protected override void OnModelCreating(ModelBuilder model)
     {
-        model.Entity<Enrollment>(e =>
+        model.Entity<EnrollmentEntity>(e =>
         {
             e.HasKey(x => x.EnrollmentId);
             e.Property(x => x.ProgressPct).HasColumnType("decimal(5,2)");

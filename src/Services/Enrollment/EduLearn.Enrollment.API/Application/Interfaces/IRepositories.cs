@@ -1,4 +1,5 @@
 using EduLearn.Enrollment.API.Domain.Entities;
+using EnrollmentEntity = EduLearn.Enrollment.API.Domain.Entities.Enrollment;
 
 namespace EduLearn.Enrollment.API.Application.Interfaces;
 
@@ -10,14 +11,14 @@ public interface IRepository<T> where T : class
     Task SaveChangesAsync();
 }
 
-public interface IEnrollmentRepository : IRepository<Enrollment>
+public interface IEnrollmentRepository : IRepository<EnrollmentEntity>
 {
     // Check if a student is already enrolled in a course
-    Task<Enrollment?> GetByStudentAndCourseAsync(Guid studentId, Guid courseId);
+    Task<EnrollmentEntity?> GetByStudentAndCourseAsync(Guid studentId, Guid courseId);
     // Get all courses a student is enrolled in
-    Task<IEnumerable<Enrollment>> GetByStudentAsync(Guid studentId);
+    Task<IEnumerable<EnrollmentEntity>> GetByStudentAsync(Guid studentId);
     // Get enrollment with full lesson progress loaded
-    Task<Enrollment?> GetWithProgressAsync(Guid enrollmentId);
+    Task<EnrollmentEntity?> GetWithProgressAsync(Guid enrollmentId);
 }
 
 public interface ILessonProgressRepository : IRepository<LessonProgress>

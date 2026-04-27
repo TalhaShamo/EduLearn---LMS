@@ -1,5 +1,6 @@
 using MassTransit;
 using EduLearn.Shared.Events;
+using EduLearn.Payment.API.Infrastructure.Data;
 
 namespace EduLearn.Payment.API.Saga;
 

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using EduLearn.Enrollment.API.Application.Interfaces;
 using EduLearn.Enrollment.API.Domain.Entities;
 using EduLearn.Enrollment.API.Infrastructure.Data;
+using EnrollmentEntity = EduLearn.Enrollment.API.Domain.Entities.Enrollment;
 
 namespace EduLearn.Enrollment.API.Infrastructure.Repositories;
 
@@ -17,21 +18,21 @@ public abstract class BaseRepository<T> : IRepository<T> where T : class
 }
 
 // ── ENROLLMENT REPOSITORY ─────────────────────────────────────
-public class EnrollmentRepository : BaseRepository<Enrollment>, IEnrollmentRepository
+public class EnrollmentRepository : BaseRepository<EnrollmentEntity>, IEnrollmentRepository
 {
     public EnrollmentRepository(EnrollmentDbContext db) : base(db) { }
 
-    public async Task<Enrollment?> GetByStudentAndCourseAsync(Guid studentId, Guid courseId) =>
+    public async Task<EnrollmentEntity?> GetByStudentAndCourseAsync(Guid studentId, Guid courseId) =>
         await _db.Enrollments
                  .FirstOrDefaultAsync(e => e.StudentId == studentId && e.CourseId == courseId);
 
-    public async Task<IEnumerable<Enrollment>> GetByStudentAsync(Guid studentId) =>
+    public async Task<IEnumerable<EnrollmentEntity>> GetByStudentAsync(Guid studentId) =>
         await _db.Enrollments
                  .Where(e => e.StudentId == studentId)
                  .OrderByDescending(e => e.EnrolledAt)
                  .ToListAsync();
 
-    public async Task<Enrollment?> GetWithProgressAsync(Guid enrollmentId) =>
+    public async Task<EnrollmentEntity?> GetWithProgressAsync(Guid enrollmentId) =>
         await _db.Enrollments
                  .Include(e => e.LessonProgresses)
                  .FirstOrDefaultAsync(e => e.EnrollmentId == enrollmentId);

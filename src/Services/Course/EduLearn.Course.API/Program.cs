@@ -74,9 +74,13 @@ builder.Services.AddMassTransit(x =>
 });
 
 // ── CORS ──────────────────────────────────────────────────────
+builder.WebHost.ConfigureKestrel(o =>
+    o.Limits.MaxRequestBodySize = 4L * 1024 * 1024 * 1024); // 4 GB
+
 builder.Services.AddCors(opts =>
     opts.AddPolicy("Angular", p =>
-        p.WithOrigins("http://localhost:4200").AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
+        p.WithOrigins("http://localhost:4200", "https://localhost:7094")
+         .AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
 
 // ── SWAGGER ───────────────────────────────────────────────────
 builder.Services.AddEndpointsApiExplorer();

@@ -5,6 +5,7 @@ using EduLearn.Enrollment.API.Application.Interfaces;
 using EduLearn.Enrollment.API.Domain.Entities;
 using EduLearn.Shared.Events;
 using EduLearn.Shared.Exceptions;
+using EnrollmentEntity = EduLearn.Enrollment.API.Domain.Entities.Enrollment;
 
 namespace EduLearn.Enrollment.API.Application.Commands;
 
@@ -28,7 +29,7 @@ public class EnrollFreeCommandHandler : IRequestHandler<EnrollFreeCommand, Enrol
             throw new ConflictException("You are already enrolled in this course.");
 
         // Create enrollment entity
-        var enrollment = Enrollment.CreateFree(cmd.StudentId, cmd.CourseId, cmd.TotalLessons);
+        var enrollment = EnrollmentEntity.CreateFree(cmd.StudentId, cmd.CourseId, cmd.TotalLessons);
         await _enrollRepo.AddAsync(enrollment);
         await _enrollRepo.SaveChangesAsync();
 
@@ -40,7 +41,7 @@ public class EnrollFreeCommandHandler : IRequestHandler<EnrollFreeCommand, Enrol
         return MapToDto(enrollment);
     }
 
-    internal static EnrollmentDto MapToDto(Enrollment e) => new(
+    internal static EnrollmentDto MapToDto(EnrollmentEntity e) => new(
         e.EnrollmentId, e.StudentId, e.CourseId, e.EnrolledAt,
         e.Status.ToString(), e.ProgressPct, e.TotalLessons, e.CompletedLessons, e.CompletedAt);
 }
@@ -65,7 +66,7 @@ public class CreatePaidEnrollmentCommandHandler : IRequestHandler<CreatePaidEnro
         if (existing is not null)
             return EnrollFreeCommandHandler.MapToDto(existing);
 
-        var enrollment = Enrollment.CreatePaid(cmd.StudentId, cmd.CourseId, cmd.TotalLessons, cmd.PaymentId);
+        var enrollment = EnrollmentEntity.CreatePaid(cmd.StudentId, cmd.CourseId, cmd.TotalLessons, cmd.PaymentId);
         await _enrollRepo.AddAsync(enrollment);
         await _enrollRepo.SaveChangesAsync();
 
@@ -127,7 +128,7 @@ public class UpdateProgressCommandHandler : IRequestHandler<UpdateProgressComman
                                      progress.WatchedSeconds, progress.CompletedAt);
     }
 
-    private async Task PublishCourseCompleted(Enrollment enrollment, UpdateProgressCommand cmd, CancellationToken ct)
+    private async Task PublishCourseCompleted(EnrollmentEntity enrollment, UpdateProgressCommand cmd, CancellationToken ct)
     {
         // CourseCompletedEvent → Certificate.API will generate the PDF certificate
         await _bus.Publish(new CourseCompletedEvent(
