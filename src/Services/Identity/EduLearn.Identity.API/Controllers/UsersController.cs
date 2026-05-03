@@ -61,4 +61,22 @@ public class UsersController : ControllerBase
         await _mediator.Send(new ActivateUserCommand(id));
         return Ok(ApiResponse<string>.Ok("", "User activated."));
     }
+
+    // GET /api/v1/users/recent — Admin only, get recent users
+    [HttpGet("recent")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetRecentUsers()
+    {
+        var users = await _mediator.Send(new GetAllUsersQuery(1, 10));
+        return Ok(ApiResponse<IEnumerable<UserDto>>.Ok(users));
+    }
+
+    // DELETE /api/v1/users/{id} — Admin only, permanently delete user
+    [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        await _mediator.Send(new DeleteUserCommand(id));
+        return Ok(ApiResponse<string>.Ok("", "User deleted permanently."));
+    }
 }

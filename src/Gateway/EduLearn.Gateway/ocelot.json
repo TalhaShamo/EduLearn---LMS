@@ -1,9 +1,5 @@
 {
-  // Ocelot route table — maps each incoming path to the correct downstream microservice
-  // Format: upstream = what the client sends, downstream = internal service URL
   "Routes": [
-
-    // ── IDENTITY SERVICE (:5001) ──────────────────────────────
     {
       "UpstreamPathTemplate": "/api/v1/auth/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "PATCH", "DELETE" ],
@@ -19,14 +15,28 @@
       "DownstreamHostAndPorts": [ { "Host": "identity-api", "Port": 8080 } ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
-
-    // ── COURSE SERVICE (:5002) ────────────────────────────────
+    {
+      "UpstreamPathTemplate": "/api/v1/admin/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "PATCH", "DELETE" ],
+      "DownstreamPathTemplate": "/api/v1/admin/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "identity-api", "Port": 8080 } ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
+    },
     {
       "UpstreamPathTemplate": "/api/v1/courses/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "PATCH", "DELETE" ],
       "DownstreamPathTemplate": "/api/v1/courses/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "course-api", "Port": 8080 } ]
+    },
+    {
+      "UpstreamPathTemplate": "/api/v1/instructor/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "PATCH", "DELETE" ],
+      "DownstreamPathTemplate": "/api/v1/instructor/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "course-api", "Port": 8080 } ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
       "UpstreamPathTemplate": "/api/v1/lessons/{everything}",
@@ -42,8 +52,6 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "course-api", "Port": 8080 } ]
     },
-
-    // ── ENROLLMENT SERVICE (:5003) ────────────────────────────
     {
       "UpstreamPathTemplate": "/api/v1/enrollments/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "PATCH", "DELETE" ],
@@ -60,8 +68,6 @@
       "DownstreamHostAndPorts": [ { "Host": "enrollment-api", "Port": 8080 } ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
-
-    // ── ASSESSMENT SERVICE (:5004) ────────────────────────────
     {
       "UpstreamPathTemplate": "/api/v1/quizzes/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "PATCH", "DELETE" ],
@@ -76,8 +82,6 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "assessment-api", "Port": 8080 } ]
     },
-
-    // ── PAYMENT SERVICE (:5005) ───────────────────────────────
     {
       "UpstreamPathTemplate": "/api/v1/payments/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "PATCH" ],
@@ -85,8 +89,6 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "payment-api", "Port": 8080 } ]
     },
-
-    // ── CERTIFICATE SERVICE (:5007) ───────────────────────────
     {
       "UpstreamPathTemplate": "/api/v1/certificates/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "DELETE" ],
@@ -95,8 +97,6 @@
       "DownstreamHostAndPorts": [ { "Host": "certificate-api", "Port": 8080 } ]
     }
   ],
-
-  // Global Ocelot settings
   "GlobalConfiguration": {
     "BaseUrl": "http://localhost:5000"
   }

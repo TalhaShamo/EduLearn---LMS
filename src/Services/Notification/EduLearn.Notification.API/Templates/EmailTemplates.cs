@@ -72,4 +72,20 @@ public static class EmailTemplates
             "<p>Score: <strong>" + score + " / " + max + "</strong></p>" +
             "<p>Feedback: <em>" + feedback + "</em></p>" +
             "<a class='btn' href='http://localhost:4200/my-courses'>View Course</a>");
+
+    public static string EmailVerification(string name, string verificationLink) => Wrap("Verify Your Email",
+        "<h2>Welcome to EduLearn! 🎓</h2>" +
+        "<p>Hi <strong>" + name + "</strong>, thank you for registering with EduLearn.</p>" +
+        "<p>Please verify your email address by clicking the button below:</p>" +
+        "<a class='btn' href='" + verificationLink + "'>Verify Email</a>" +
+        "<p style='margin-top:20px;font-size:14px;color:#666'>This link will expire in 24 hours.</p>" +
+        "<p style='font-size:14px;color:#666'>If you didn't create an account, you can safely ignore this email.</p>");
+
+    public static string PasswordReset(string name, string resetLink) => Wrap("Reset Your Password",
+        "<h2>Password Reset Request 🔐</h2>" +
+        "<p>Hi <strong>" + name + "</strong>, we received a request to reset your password.</p>" +
+        "<p>Click the button below to set a new password:</p>" +
+        "<a class='btn' href='" + resetLink + "'>Reset Password</a>" +
+        "<p style='margin-top:20px;font-size:14px;color:#666'>This link will expire in 1 hour.</p>" +
+        "<p style='font-size:14px;color:#666'>If you didn't request a password reset, you can safely ignore this email.</p>");
 }

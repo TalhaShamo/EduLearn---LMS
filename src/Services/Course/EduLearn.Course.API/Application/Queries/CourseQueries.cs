@@ -66,6 +66,23 @@ public class GetInstructorCoursesQueryHandler : IRequestHandler<GetInstructorCou
     }
 }
 
+// ── GET COURSE BY SLUG ────────────────────────────────────────
+public record GetCourseBySlugQuery(string Slug) : IRequest<CourseDetailDto>;
+
+public class GetCourseBySlugQueryHandler : IRequestHandler<GetCourseBySlugQuery, CourseDetailDto>
+{
+    private readonly ICourseRepository _repo;
+    public GetCourseBySlugQueryHandler(ICourseRepository repo) => _repo = repo;
+
+    public async Task<CourseDetailDto> Handle(GetCourseBySlugQuery q, CancellationToken ct)
+    {
+        var course = await _repo.GetBySlugAsync(q.Slug)
+                     ?? throw new NotFoundException("Course", q.Slug);
+
+        return Commands.CreateCourseCommandHandler.MapToDetail(course);
+    }
+}
+
 // ── ADMIN: GET PENDING REVIEW COURSES ────────────────────────
 public record GetPendingCoursesQuery : IRequest<IEnumerable<CourseListDto>>;
 

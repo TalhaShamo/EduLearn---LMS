@@ -1,0 +1,93 @@
+<div class="dashboard-page">
+  <div class="container">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div>
+        <h1>My Learning</h1>
+        <p>{{ enrollments.length }} courses enrolled</p>
+      </div>
+      <a routerLink="/courses" class="btn btn-outline">
+        <span class="material-icons">add</span> Browse more courses
+      </a>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="filter-tabs">
+      <button class="ftab" [class.active]="activeFilter === 'all'"         (click)="activeFilter = 'all'">All Courses</button>
+      <button class="ftab" [class.active]="activeFilter === 'in-progress'" (click)="activeFilter = 'in-progress'">In Progress</button>
+      <button class="ftab" [class.active]="activeFilter === 'completed'"   (click)="activeFilter = 'completed'">Completed</button>
+    </div>
+
+    <!-- Skeletons -->
+    <div class="learning-grid" *ngIf="isLoading">
+      <div class="enrollment-card skeleton-card" *ngFor="let i of [1,2,3]">
+        <div class="skeleton sk-thumb"></div>
+        <div class="sk-body">
+          <div class="skeleton sk-line short"></div>
+          <div class="skeleton sk-line"></div>
+          <div class="skeleton sk-line medium"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Enrollment Cards -->
+    <div class="learning-grid" *ngIf="!isLoading && filtered.length > 0">
+      <div class="enrollment-card" *ngFor="let e of filtered">
+        <!-- Course Thumbnail -->
+        <div class="card-thumb">
+          <img *ngIf="e.courseThumbnailUrl" [src]="e.courseThumbnailUrl" [alt]="e.courseTitle" />
+          <div class="thumb-placeholder" *ngIf="!e.courseThumbnailUrl">
+            <span class="material-icons">play_lesson</span>
+          </div>
+          <div class="completed-overlay" *ngIf="e.isCompleted">
+            <span class="material-icons">check_circle</span>
+            <span>Completed</span>
+          </div>
+        </div>
+
+        <!-- Card Body -->
+        <div class="card-body">
+          <div class="course-category">{{ e.courseCategory }}</div>
+          <h3 class="course-title">{{ e.courseTitle }}</h3>
+          <p class="instructor">Instructor</p>
+
+          <!-- Progress Bar -->
+          <div class="progress-section">
+            <div class="progress-label">
+              <span>{{ e.completionPercentage }}% complete</span>
+              <span *ngIf="e.isCompleted" class="done-tag">
+                <span class="material-icons">workspace_premium</span> Certificate earned
+              </span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" [style.width.%]="e.completionPercentage"
+                [class.complete]="e.isCompleted"></div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="card-actions">
+            <a [routerLink]="['/learn', e.courseId]" class="btn-continue">
+              <span class="material-icons">{{ e.isCompleted ? 'replay' : 'play_arrow' }}</span>
+              {{ e.isCompleted ? 'Review Course' : 'Continue Learning' }}
+            </a>
+            <a *ngIf="e.isCompleted" routerLink="/student/certificates" class="btn-cert">
+              <span class="material-icons">download</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && filtered.length === 0">
+      <span class="material-icons">school</span>
+      <h3>No courses here yet</h3>
+      <p *ngIf="activeFilter === 'all'">Start learning today by enrolling in a course</p>
+      <p *ngIf="activeFilter !== 'all'">No {{ activeFilter }} courses found</p>
+      <a routerLink="/courses" class="btn btn-primary">Browse Courses</a>
+    </div>
+
+  </div>
+</div>

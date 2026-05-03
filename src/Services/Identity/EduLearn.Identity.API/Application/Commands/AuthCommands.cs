@@ -24,11 +24,13 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, UserDto>
 {
     private readonly IUserRepository _userRepo;
     private readonly IPublishEndpoint _bus;  // MassTransit — to publish UserRegisteredEvent
+    private readonly IMediator _mediator;
 
-    public RegisterCommandHandler(IUserRepository userRepo, IPublishEndpoint bus)
+    public RegisterCommandHandler(IUserRepository userRepo, IPublishEndpoint bus, IMediator mediator)
     {
         _userRepo = userRepo;
         _bus      = bus;
+        _mediator = mediator;
     }
 
     public async Task<UserDto> Handle(RegisterCommand cmd, CancellationToken ct)
@@ -54,7 +56,10 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, UserDto>
         await _bus.Publish(new UserRegisteredEvent(
             user.UserId, user.FullName, user.Email, role.ToString(), user.CreatedAt), ct);
 
-        // 7. Return DTO (never return the entity directly)
+        // 7. Send email verification
+        await _mediator.Send(new SendEmailVerificationCommand(user.UserId), ct);
+
+        // 8. Return DTO (never return the entity directly)
         return MapToDto(user);
     }
 
@@ -92,6 +97,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, (AuthResponse, 
         // 3. Check account status
         if (user.IsBanned) throw new ForbiddenException("Your account has been suspended.");
         if (!user.IsActive) throw new ForbiddenException("Your account is inactive.");
+        if (!user.IsVerified) throw new ForbiddenException("Please verify your email before logging in. Check your inbox for the verification link.");
 
         // 4. Generate access token (15-min JWT)
         var accessToken = _jwt.GenerateAccessToken(user.UserId, user.Email, user.Role.ToString());

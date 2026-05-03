@@ -32,6 +32,13 @@ public class CourseRepository : BaseRepository<CourseEntity>, ICourseRepository
                  .ThenInclude(s => s.Lessons.OrderBy(l => l.SortOrder))
                  .FirstOrDefaultAsync(c => c.CourseId == courseId);
 
+    // Get course by slug with sections and lessons
+    public async Task<CourseEntity?> GetBySlugAsync(string slug) =>
+        await _db.Courses
+                 .Include(c => c.Sections.OrderBy(s => s.SortOrder))
+                 .ThenInclude(s => s.Lessons.OrderBy(l => l.SortOrder))
+                 .FirstOrDefaultAsync(c => c.Slug == slug);
+
     // Catalog: published only, with optional search + category filter
     public async Task<IEnumerable<CourseEntity>> GetPublishedPagedAsync(int page, int pageSize, string? search, string? category)
     {

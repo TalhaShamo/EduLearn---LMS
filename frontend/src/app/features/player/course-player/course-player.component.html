@@ -1,0 +1,130 @@
+<div class="player-page" *ngIf="!isLoading && course">
+
+  <!-- ─── Top Bar ─────────────────────────────────────────────────────── -->
+  <div class="player-topbar">
+    <button class="back-btn" routerLink="/student/my-learning">
+      <span class="material-icons">arrow_back</span>
+    </button>
+    <div class="course-name-bar">{{ course.title }}</div>
+
+    <div class="progress-bar-wrap">
+      <div class="pb-label">{{ completionPercentage }}% complete</div>
+      <div class="pb-track"><div class="pb-fill" [style.width.%]="completionPercentage"></div></div>
+      <div class="pb-fraction">{{ completedLessons }}/{{ totalLessons }}</div>
+    </div>
+
+    <button class="sidebar-toggle" (click)="sidebarOpen = !sidebarOpen" title="Toggle sidebar">
+      <span class="material-icons">{{ sidebarOpen ? 'menu_open' : 'menu' }}</span>
+    </button>
+  </div>
+
+  <!-- ─── Main Layout ─────────────────────────────────────────────────── -->
+  <div class="player-layout" [class.sidebar-hidden]="!sidebarOpen">
+
+    <!-- Content Area -->
+    <main class="content-area">
+
+      <!-- Video Lesson -->
+      <div class="video-wrap" *ngIf="activeLesson?.lessonType === 'Video' && activeLesson">
+        <video
+          #videoEl
+          controls
+          class="video-player"
+          [src]="activeLesson.lessonId ? getVideoUrl(activeLesson.lessonId) : ''"
+          *ngIf="activeLesson.lessonId"
+        ></video>
+        <div class="video-placeholder" *ngIf="!activeLesson.lessonId">
+          <span class="material-icons">play_circle</span>
+          <p>{{ activeLesson.title }}</p>
+          <span class="video-note">Video not available</span>
+        </div>
+      </div>
+
+      <!-- Article Lesson -->
+      <div class="article-wrap" *ngIf="activeLesson?.lessonType === 'Article'">
+        <div class="article-header">
+          <span class="material-icons">article</span>
+          <h2>{{ activeLesson?.title }}</h2>
+        </div>
+        <div class="article-body" *ngIf="activeLesson?.richContent" [innerHTML]="activeLesson!.richContent"></div>
+        <div class="article-placeholder" *ngIf="!activeLesson?.richContent">
+          <p>Article content will be loaded from the backend.</p>
+        </div>
+      </div>
+
+      <!-- Quiz Lesson -->
+      <div class="quiz-wrap" *ngIf="activeLesson?.lessonType === 'Quiz'">
+        <div class="quiz-header">
+          <span class="material-icons">quiz</span>
+          <h2>{{ activeLesson?.title }}</h2>
+        </div>
+        <div class="quiz-placeholder">
+          <span class="material-icons">pending</span>
+          <p>Quiz will load here. Connect to the backend to take quizzes.</p>
+        </div>
+      </div>
+
+      <!-- Lesson Footer -->
+      <div class="lesson-footer" *ngIf="activeLesson">
+        <h3 class="lesson-title-footer">{{ activeLesson.title }}</h3>
+        <div class="lesson-actions">
+          <button
+            class="btn-complete"
+            [class.done]="isCompleted(activeLesson.lessonId)"
+            (click)="markComplete(activeLesson)"
+            id="mark-complete-btn"
+          >
+            <span class="material-icons">{{ isCompleted(activeLesson.lessonId) ? 'check_circle' : 'check_circle_outline' }}</span>
+            {{ isCompleted(activeLesson.lessonId) ? 'Completed' : 'Mark as Complete' }}
+          </button>
+          <button class="btn-next" (click)="goToNextLesson()">
+            Next Lesson <span class="material-icons">navigate_next</span>
+          </button>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ─── Sidebar ──────────────────────────────────────────────────── -->
+    <aside class="course-sidebar" [class.open]="sidebarOpen">
+      <div class="sidebar-header">
+        <h4>Course Content</h4>
+        <span class="lesson-count">{{ totalLessons }} lessons</span>
+      </div>
+
+      <div class="sections-list">
+        <div class="section-item" *ngFor="let section of course.sections">
+          <button class="section-header" (click)="toggleSection(section.sectionId)">
+            <span class="material-icons expand-icon" [class.open]="expandedSections.has(section.sectionId)">expand_more</span>
+            <span class="section-title">{{ section.title }}</span>
+          </button>
+
+          <div class="lessons-list" [class.open]="expandedSections.has(section.sectionId)">
+            <button
+              class="lesson-row"
+              *ngFor="let lesson of section.lessons"
+              [class.active]="activeLesson?.lessonId === lesson.lessonId"
+              [class.completed]="isCompleted(lesson.lessonId)"
+              (click)="setActiveLesson(lesson)"
+            >
+              <div class="lesson-status">
+                <span class="material-icons done-icon" *ngIf="isCompleted(lesson.lessonId)">check_circle</span>
+                <span class="material-icons type-icon" *ngIf="!isCompleted(lesson.lessonId)">{{ getLessonIcon(lesson) }}</span>
+              </div>
+              <div class="lesson-info">
+                <div class="lesson-name">{{ lesson.title }}</div>
+                <div class="lesson-dur">{{ lesson.durationSeconds | duration }}</div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- Loading -->
+<div class="player-loading" *ngIf="isLoading">
+  <div class="loader-spinner"></div>
+  <p>Loading course…</p>
+</div>

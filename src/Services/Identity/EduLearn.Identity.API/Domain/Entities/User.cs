@@ -32,7 +32,7 @@ public class User
             Email        = email.ToLowerInvariant().Trim(),
             PasswordHash = passwordHash,
             Role         = role,
-            IsVerified   = true // Simplified: auto-verify for this learning project
+            IsVerified   = false // Requires email verification
         };
     }
 
@@ -60,5 +60,14 @@ public class User
     {
         IsBanned = false;
         IsActive = true;
+    }
+
+    // Domain behaviour: verify email
+    public void Verify() => IsVerified = true;
+
+    // Domain behaviour: update password (used for password reset)
+    public void UpdatePassword(string newPasswordHash)
+    {
+        PasswordHash = newPasswordHash;
     }
 }

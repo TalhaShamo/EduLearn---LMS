@@ -27,12 +27,22 @@ public class CoursesController : ControllerBase
         return Ok(ApiResponse<IEnumerable<CourseListDto>>.Ok(courses));
     }
 
-    // GET /api/v1/courses/{id}
+    // GET /api/v1/courses/{id} - Get by GUID
     [HttpGet("{id:guid}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetById(Guid id)
     {
         var course = await _mediator.Send(new GetCourseDetailQuery(id));
+        return Ok(ApiResponse<CourseDetailDto>.Ok(course));
+    }
+
+    // GET /api/v1/courses/{slug} - Get by slug (string)
+    [HttpGet("{slug}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetBySlug(string slug)
+    {
+        // Try to find course by slug
+        var course = await _mediator.Send(new GetCourseBySlugQuery(slug));
         return Ok(ApiResponse<CourseDetailDto>.Ok(course));
     }
 
@@ -52,8 +62,9 @@ public class CoursesController : ControllerBase
     public async Task<IActionResult> Create([FromBody] CreateCourseRequest req)
     {
         var instructorId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        var cmd    = new CreateCourseCommand(instructorId, req.Title, req.Description,
-                                             req.Category, req.Level, req.Price, req.Language);
+        var cmd    = new CreateCourseCommand(instructorId, req.Title, req.Subtitle, req.Description,
+                                             req.GetCategory(), req.Level, req.Price, req.Language,
+                                             req.Tags, req.LearningObjectives, req.Sections);
         var course = await _mediator.Send(cmd);
         return StatusCode(201, ApiResponse<CourseDetailDto>.Created(course));
     }
@@ -64,8 +75,9 @@ public class CoursesController : ControllerBase
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateCourseRequest req)
     {
         var instructorId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        var cmd    = new UpdateCourseCommand(id, instructorId, req.Title, req.Description,
-                                             req.Category, req.Level, req.Price);
+        var cmd    = new UpdateCourseCommand(id, instructorId, req.Title, req.Subtitle, req.Description,
+                                             req.GetCategory(), req.Level, req.Price,
+                                             req.Tags, req.LearningObjectives, req.Sections);
         var course = await _mediator.Send(cmd);
         return Ok(ApiResponse<CourseDetailDto>.Ok(course));
     }
@@ -98,6 +110,15 @@ public class CoursesController : ControllerBase
         return Ok(ApiResponse<string>.Ok("", "Changes requested."));
     }
 
+    // DELETE /api/v1/courses/{id} — Instructor can delete their own draft courses
+    [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Instructor")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var instructorId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        await _mediator.Send(new DeleteCourseCommand(id, instructorId));
+        return Ok(ApiResponse<string>.Ok("", "Course deleted successfully."));
+    }
     // GET /api/v1/courses/pending — Admin only
     [HttpGet("pending")]
     [Authorize(Roles = "Admin")]

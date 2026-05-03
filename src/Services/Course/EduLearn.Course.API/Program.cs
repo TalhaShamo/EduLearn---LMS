@@ -37,6 +37,9 @@ builder.Services.AddScoped<IVideoStorageService, LocalVideoStorageService>();
 // ── MEDIATR ───────────────────────────────────────────────────
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
+// ── HTTP CLIENT FACTORY ───────────────────────────────────────
+builder.Services.AddHttpClient();
+
 // ── FLUENT VALIDATION ─────────────────────────────────────────
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);

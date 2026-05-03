@@ -1,0 +1,103 @@
+<header class="header" [class.header-scrolled]="isScrolled">
+  <div class="container">
+    <div class="header-inner">
+
+      <!-- Logo -->
+      <a routerLink="/" class="logo">
+        <div class="logo-icon">
+          <span class="material-icons">school</span>
+        </div>
+        <span class="logo-text">Edu<strong>Learn</strong></span>
+      </a>
+
+      <!-- Search Bar (desktop) -->
+      <div class="search-bar hide-mobile">
+        <span class="material-icons search-icon">search</span>
+        <input
+          type="text"
+          placeholder="Search for courses, topics, instructors..."
+          [(ngModel)]="searchQuery"
+          (keyup.enter)="onSearch()"
+          id="header-search"
+        />
+        <button class="search-btn" (click)="onSearch()">Search</button>
+      </div>
+
+      <!-- Nav Links (desktop) -->
+      <nav class="nav-links hide-mobile">
+        <a routerLink="/courses" routerLinkActive="active">Courses</a>
+
+        <ng-container *ngIf="!currentUser">
+          <a routerLink="/auth/login" class="nav-login">Log in</a>
+          <a routerLink="/auth/register" class="btn btn-primary btn-sm">Get Started</a>
+        </ng-container>
+
+        <ng-container *ngIf="currentUser">
+          <!-- Dashboard link based on role -->
+          <a [routerLink]="getDashboardRoute()" routerLinkActive="active">
+            <span class="material-icons" style="font-size:18px;vertical-align:middle">dashboard</span>
+            Dashboard
+          </a>
+
+          <!-- User Avatar Menu -->
+          <div class="avatar-menu" [matMenuTriggerFor]="userMenu">
+            <div class="avatar">
+              <img *ngIf="currentUser.profileImageUrl" [src]="currentUser.profileImageUrl" [alt]="currentUser.fullName" />
+              <span *ngIf="!currentUser.profileImageUrl" class="avatar-initials">
+                {{ currentUser.fullName[0].toUpperCase() }}
+              </span>
+            </div>
+            <span class="material-icons chevron">expand_more</span>
+          </div>
+
+          <mat-menu #userMenu="matMenu" class="user-menu-panel">
+            <div class="menu-header">
+              <strong>{{ currentUser.fullName }}</strong>
+              <small>{{ currentUser.email }}</small>
+              <span class="badge badge-primary mt-sm">{{ currentUser.role }}</span>
+            </div>
+            <mat-divider></mat-divider>
+            <button mat-menu-item [routerLink]="getDashboardRoute()">
+              <span class="material-icons">dashboard</span> Dashboard
+            </button>
+            <button mat-menu-item routerLink="/student/my-learning" *ngIf="currentUser.role === 'Student'">
+              <span class="material-icons">play_circle</span> My Learning
+            </button>
+            <button mat-menu-item routerLink="/student/certificates" *ngIf="currentUser.role === 'Student'">
+              <span class="material-icons">workspace_premium</span> Certificates
+            </button>
+            <button mat-menu-item routerLink="/student/profile">
+              <span class="material-icons">person</span> Profile
+            </button>
+            <mat-divider></mat-divider>
+            <button mat-menu-item (click)="logout()" class="logout-btn">
+              <span class="material-icons">logout</span> Log Out
+            </button>
+          </mat-menu>
+        </ng-container>
+      </nav>
+
+      <!-- Mobile Hamburger -->
+      <button class="hamburger show-mobile" (click)="toggleMobileMenu()" id="mobile-menu-btn">
+        <span class="material-icons">{{ mobileMenuOpen ? 'close' : 'menu' }}</span>
+      </button>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" *ngIf="mobileMenuOpen">
+      <div class="search-bar mobile-search">
+        <span class="material-icons search-icon">search</span>
+        <input type="text" placeholder="Search courses..." [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" />
+      </div>
+      <a routerLink="/courses" (click)="mobileMenuOpen=false">Browse Courses</a>
+      <ng-container *ngIf="!currentUser">
+        <a routerLink="/auth/login" (click)="mobileMenuOpen=false">Log In</a>
+        <a routerLink="/auth/register" class="btn btn-primary" (click)="mobileMenuOpen=false">Get Started</a>
+      </ng-container>
+      <ng-container *ngIf="currentUser">
+        <a [routerLink]="getDashboardRoute()" (click)="mobileMenuOpen=false">Dashboard</a>
+        <a (click)="logout()">Log Out</a>
+      </ng-container>
+    </div>
+  </div>
+</header>

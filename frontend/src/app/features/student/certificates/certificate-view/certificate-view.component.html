@@ -1,0 +1,50 @@
+<div class="certificate-page" *ngIf="!isLoading && certificate">
+  <div class="certificate-container">
+    <div class="certificate">
+      <!-- Header -->
+      <div class="cert-header">
+        <div class="logo">EduLearn</div>
+        <h1>Certificate of Completion</h1>
+        <div class="subtitle">This is to certify that</div>
+      </div>
+
+      <!-- Student Name -->
+      <div class="student-name">{{ certificate.studentName }}</div>
+
+      <!-- Body -->
+      <div class="cert-body">
+        <p class="completion-text">has successfully completed the course</p>
+        <h2 class="course-title">{{ certificate.courseName }}</h2>
+        <p class="instructor-text">Instructed by <strong>{{ certificate.instructorName }}</strong></p>
+      </div>
+
+      <!-- Footer -->
+      <div class="cert-footer">
+        <div class="date-section">
+          <div class="date-label">Date of Completion</div>
+          <div class="date-value">{{ certificate.completionDate }}</div>
+        </div>
+        <div class="signature-section">
+          <div class="signature-line"></div>
+          <div class="signature-label">Authorized Signature</div>
+        </div>
+      </div>
+
+      <!-- Certificate ID -->
+      <div class="cert-id">Certificate ID: {{ certificate.certificateId }}</div>
+    </div>
+  </div>
+
+  <!-- Print Button (hidden when printing) -->
+  <div class="actions no-print">
+    <button class="btn-print" (click)="print()">
+      <span class="material-icons">print</span>
+      Print Certificate
+    </button>
+  </div>
+</div>
+
+<div class="loading" *ngIf="isLoading">
+  <div class="spinner"></div>
+  <p>Loading certificate...</p>
+</div>

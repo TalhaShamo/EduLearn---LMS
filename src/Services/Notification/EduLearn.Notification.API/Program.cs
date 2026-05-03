@@ -25,6 +25,8 @@ builder.Services.AddMassTransit(x =>
     x.AddConsumer<QuizGradedConsumer>();
     x.AddConsumer<AssignmentGradedConsumer>();
     x.AddConsumer<CertificateIssuedConsumer>();
+    x.AddConsumer<EmailVerificationConsumer>();
+    x.AddConsumer<PasswordResetConsumer>();
 
     x.UsingRabbitMq((ctx, cfg) =>
     {

@@ -1,0 +1,100 @@
+<div class="instructor-page">
+  <div class="container">
+  <div class="page-header">
+    <div>
+      <h1>My Courses</h1>
+      <p>{{ courses.length }} courses total</p>
+    </div>
+    <a routerLink="/instructor/courses/new" class="btn-create">
+      <span class="material-icons">add</span> New Course
+    </a>
+  </div>
+
+  <!-- Filter Tabs -->
+  <div class="filter-tabs">
+    <button class="ftab" *ngFor="let f of filters"
+      [class.active]="activeFilter === f"
+      (click)="activeFilter = f">
+      {{ f === 'PendingReview' ? 'Under Review' : f }}
+    </button>
+  </div>
+
+  <!-- Table -->
+  <div class="courses-table" *ngIf="!isLoading">
+    <div class="table-header">
+      <span>Course</span>
+      <span>Status</span>
+      <span>Students</span>
+      <span>Rating</span>
+      <span>Revenue</span>
+      <span>Actions</span>
+    </div>
+
+    <div class="table-row" *ngFor="let c of filtered">
+      <div class="course-cell">
+        <div class="mini-thumb">
+          <img *ngIf="c.thumbnailUrl" [src]="c.thumbnailUrl" [alt]="c.title"/>
+          <div class="mini-ph" *ngIf="!c.thumbnailUrl"><span class="material-icons">play_lesson</span></div>
+        </div>
+        <div>
+          <div class="course-title">{{ c.title }}</div>
+          <div class="course-sub">{{ c.categoryName }} · {{ c.level }}</div>
+        </div>
+      </div>
+
+      <div class="status-cell">
+        <span class="status-badge" [class]="getStatusClass(c.status)">{{ getStatusLabel(c.status) }}</span>
+      </div>
+
+      <div class="num-cell">{{ c.enrollmentCount | number }}</div>
+
+      <div class="rating-cell">
+        <span *ngIf="c.averageRating > 0">
+          <span class="material-icons star-sm">star</span>{{ c.averageRating.toFixed(1) }}
+        </span>
+        <span *ngIf="!c.averageRating" class="no-rating">—</span>
+      </div>
+
+      <div class="num-cell revenue">₹{{ (c.price * c.enrollmentCount) | number }}</div>
+
+      <div class="actions-cell">
+        <button class="tbl-btn" (click)="editCourse(c.courseId)" title="Edit Course">
+          <span class="material-icons">edit</span>
+        </button>
+        <a [routerLink]="['/courses', c.slug]" class="tbl-btn" title="Preview" target="_blank">
+          <span class="material-icons">open_in_new</span>
+        </a>
+        <button class="tbl-btn danger" (click)="deleteCourse(c.courseId)"
+          [class.loading]="deletingId === c.courseId" title="Delete">
+          <span class="material-icons">{{ deletingId === c.courseId ? 'refresh' : 'delete' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="empty-row" *ngIf="filtered.length === 0">
+      <span class="material-icons">library_books</span>
+      <p>No {{ activeFilter !== 'All' ? activeFilter : '' }} courses found</p>
+      <a routerLink="/instructor/courses/new" class="btn-create sm">Create your first course</a>
+    </div>
+  </div>
+
+  <!-- Skeleton -->
+  <div class="courses-table" *ngIf="isLoading">
+    <div class="table-header"><span>Course</span><span>Status</span><span>Students</span><span>Rating</span><span>Revenue</span><span>Actions</span></div>
+    <div class="table-row skeleton-row" *ngFor="let i of [1,2,3,4]">
+      <div class="course-cell">
+        <div class="skeleton" style="width:60px;height:40px;border-radius:6px;flex-shrink:0;"></div>
+        <div style="flex:1"><div class="skeleton" style="height:14px;width:80%;margin-bottom:6px"></div><div class="skeleton" style="height:11px;width:50%"></div></div>
+      </div>
+      <div class="skeleton" style="height:22px;width:80px;border-radius:20px;"></div>
+      <div class="skeleton" style="height:14px;width:40px;"></div>
+      <div class="skeleton" style="height:14px;width:30px;"></div>
+      <div class="skeleton" style="height:14px;width:60px;"></div>
+      <div style="display:flex;gap:6px">
+        <div class="skeleton" style="width:32px;height:32px;border-radius:6px;"></div>
+        <div class="skeleton" style="width:32px;height:32px;border-radius:6px;"></div>
+        <div class="skeleton" style="width:32px;height:32px;border-radius:6px;"></div>
+      </div>
+    </div>
+  </div> <!-- /.container -->
+</div> <!-- /.instructor-page -->

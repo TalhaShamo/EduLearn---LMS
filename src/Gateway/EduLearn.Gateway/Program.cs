@@ -45,14 +45,21 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect(builder.Configuration["Redis:ConnectionString"]!));
 
-// ── CORS: allow Angular frontend origin ──────────────────────
+// ── CORS: allow local frontend dev servers ────────────────────
+// `ng serve` may run on 4200/4201/etc, and devs often use 127.0.0.1 instead of localhost.
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Angular", policy =>
-        policy.WithOrigins("http://localhost:4200")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials()); // Required for HttpOnly refresh-token cookie
+        policy.SetIsOriginAllowed(origin =>
+        {
+            if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri)) return false;
+            return uri.Scheme is "http" or "https"
+                && (uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase)
+                    || uri.Host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase));
+        })
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials()); // Required for HttpOnly refresh-token cookie
 });
 
 // ── OCELOT: register routing engine ──────────────────────────
@@ -63,7 +70,37 @@ var app = builder.Build();
 // ── MIDDLEWARE PIPELINE ───────────────────────────────────────
 app.UseMiddleware<GlobalExceptionMiddleware>(); // Catch gateway-level errors
 app.UseSerilogRequestLogging();                 // Log every request
-app.UseCors("Angular");                         // Allow Angular requests
+
+// CORS must be before Ocelot to handle preflight requests
+app.UseCors("Angular");
+
+// Add CORS headers to all responses (including Ocelot proxied responses)
+app.Use(async (context, next) =>
+{
+    var origin = context.Request.Headers["Origin"].ToString();
+    if (!string.IsNullOrEmpty(origin))
+    {
+        if (Uri.TryCreate(origin, UriKind.Absolute, out var uri) &&
+            uri.Scheme is "http" or "https" &&
+            (uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase) ||
+             uri.Host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase)))
+        {
+            context.Response.Headers["Access-Control-Allow-Origin"] = origin;
+            context.Response.Headers["Access-Control-Allow-Credentials"] = "true";
+            context.Response.Headers["Access-Control-Allow-Headers"] = context.Request.Headers["Access-Control-Request-Headers"].ToString();
+            context.Response.Headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS";
+        }
+    }
+    
+    if (context.Request.Method == "OPTIONS")
+    {
+        context.Response.StatusCode = 204;
+        return;
+    }
+    
+    await next();
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 

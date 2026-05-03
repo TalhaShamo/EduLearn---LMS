@@ -1,0 +1,86 @@
+<div class="admin-page">
+  <div class="container">
+
+    <div class="page-header">
+      <div>
+        <h1>User Management</h1>
+        <p>{{ users.length }} users{{ activeRole !== 'All' ? ' (' + activeRole + ')' : '' }}</p>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="material-icons">search</span>
+        <input type="text" placeholder="Search name or email…" [formControl]="searchCtrl" id="user-search" />
+      </div>
+      <div class="role-tabs">
+        <button class="rtab" *ngFor="let r of roles" [class.active]="activeRole === r" (click)="setRole(r)">{{ r }}</button>
+      </div>
+    </div>
+
+    <!-- User Table -->
+    <div class="user-table-wrap">
+      <!-- Skeleton -->
+      <ng-container *ngIf="isLoading">
+        <div class="user-row skeleton-row" *ngFor="let i of [1,2,3,4,5,6]">
+          <div class="skeleton" style="width:40px;height:40px;border-radius:50%;flex-shrink:0"></div>
+          <div style="flex:1"><div class="skeleton" style="height:14px;width:60%;margin-bottom:6px"></div><div class="skeleton" style="height:11px;width:40%"></div></div>
+          <div class="skeleton" style="height:22px;width:70px;border-radius:20px"></div>
+          <div class="skeleton" style="height:22px;width:50px;border-radius:20px"></div>
+          <div style="display:flex;gap:6px"><div class="skeleton" style="width:70px;height:30px;border-radius:6px"></div></div>
+        </div>
+      </ng-container>
+
+      <!-- Data rows -->
+      <ng-container *ngIf="!isLoading">
+        <div class="table-header-row">
+          <span>User</span><span>Role</span><span>Status</span><span>Enrolled</span><span>Joined</span><span>Actions</span>
+        </div>
+        <div class="user-row data-row" *ngFor="let u of users" [class.banned]="u.isBanned">
+          <!-- Avatar -->
+          <div class="u-avatar" [class.instructor]="u.role === 'Instructor'" [class.admin]="u.role === 'Admin'">
+            {{ getInitials(u.fullName) }}
+          </div>
+          <!-- Info -->
+          <div class="u-info">
+            <div class="u-name">{{ u.fullName }}</div>
+            <div class="u-email">{{ u.email }}</div>
+          </div>
+          <!-- Role -->
+          <span class="role-chip" [class.instructor]="u.role === 'Instructor'" [class.admin]="u.role === 'Admin'">
+            {{ u.role }}
+          </span>
+          <!-- Status -->
+          <span class="status-chip" [class.banned]="u.isBanned" [class.unverified]="!u.isVerified && !u.isBanned" [class.active]="u.isVerified && !u.isBanned">
+            {{ u.isBanned ? 'Banned' : u.isVerified ? 'Active' : 'Unverified' }}
+          </span>
+          <!-- Enrollments -->
+          <span class="u-enroll">{{ u.totalEnrollments ?? '—' }}</span>
+          <!-- Joined -->
+          <span class="u-date">{{ u.createdAt | date:'MMM d' }}</span>
+          <!-- Actions -->
+          <div class="u-actions">
+            <button class="act-btn verify" *ngIf="!u.isVerified && !u.isBanned" (click)="verifyUser(u.userId)" title="Verify User">
+              <span class="material-icons">verified</span>
+            </button>
+            <button class="act-btn ban" *ngIf="!u.isBanned" (click)="banUser(u.userId)" [disabled]="actionUserId === u.userId" title="Ban User">
+              <span class="material-icons">block</span>
+            </button>
+            <button class="act-btn unban" *ngIf="u.isBanned" (click)="unbanUser(u.userId)" [disabled]="actionUserId === u.userId" title="Unban User">
+              <span class="material-icons">lock_open</span>
+            </button>
+            <button class="act-btn delete" (click)="deleteUser(u.userId)" [disabled]="actionUserId === u.userId" title="Delete User Permanently">
+              <span class="material-icons">delete_forever</span>
+            </button>
+          </div>
+        </div>
+        <div class="empty-state" *ngIf="users.length === 0">
+          <span class="material-icons">search_off</span>
+          <p>No users found</p>
+        </div>
+      </ng-container>
+    </div>
+
+  </div>
+</div>

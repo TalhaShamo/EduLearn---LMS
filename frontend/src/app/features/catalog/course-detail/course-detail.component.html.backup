@@ -1,0 +1,194 @@
+<!-- ─── Loading State ─────────────────────────────────────────────────────── -->
+<div class="loading-page" *ngIf="isLoading">
+  <div class="container">
+    <div class="skeleton sk-hero-title"></div>
+    <div class="skeleton sk-hero-sub"></div>
+    <div class="skeleton sk-hero-meta"></div>
+  </div>
+</div>
+
+<!-- ─── Page (loaded) ─────────────────────────────────────────────────────── -->
+<div *ngIf="!isLoading && course">
+
+  <!-- Hero Banner -->
+  <div class="course-hero">
+    <div class="container hero-layout">
+      <div class="hero-info">
+        <div class="breadcrumb">
+          <a routerLink="/courses">Courses</a>
+          <span class="material-icons">chevron_right</span>
+          <span>{{ course.categoryName }}</span>
+        </div>
+
+        <h1 class="course-title">{{ course.title }}</h1>
+        <p class="course-subtitle" *ngIf="course.subtitle">{{ course.subtitle }}</p>
+
+        <div class="hero-meta">
+          <span class="level-badge level-{{ course.level?.toLowerCase() }}">{{ course.level }}</span>
+          <span class="dot" *ngIf="course.language">·</span>
+          <span *ngIf="course.language">{{ course.language }}</span>
+          <span class="dot" *ngIf="course.enrollmentCount > 0">·</span>
+          <span *ngIf="course.enrollmentCount > 0">
+            <span class="material-icons meta-icon">people</span>
+            {{ course.enrollmentCount | number }} students
+          </span>
+          <span class="dot" *ngIf="totalLessons > 0">·</span>
+          <span *ngIf="totalLessons > 0">
+            <span class="material-icons meta-icon">play_lesson</span>
+            {{ totalLessons }} lessons
+          </span>
+        </div>
+
+        <div class="instructor-row" *ngIf="course.instructorName">
+          <div class="instructor-av">{{ getInitials(course.instructorName) }}</div>
+          <span>Instructor: <strong>{{ course.instructorName }}</strong></span>
+        </div>
+
+        <div class="hero-tags" *ngIf="course.tags?.length">
+          <span class="tag" *ngFor="let tag of course.tags">{{ tag }}</span>
+        </div>
+      </div>
+
+      <!-- Sticky Enroll Card (desktop) -->
+      <div class="enroll-card">
+        <div class="course-preview">
+          <img *ngIf="course.thumbnailUrl" [src]="course.thumbnailUrl" [alt]="course.title" />
+          <div class="preview-placeholder" *ngIf="!course.thumbnailUrl">
+            <span class="material-icons">play_circle</span>
+            <span>Preview this course</span>
+          </div>
+        </div>
+
+        <div class="enroll-body">
+          <div class="price-row">
+            <span class="price">{{ course.price === 0 ? 'Free' : ('₹' + (course.price | number)) }}</span>
+          </div>
+
+          <!-- Already enrolled -->
+          <button class="btn-enroll go-to-course" *ngIf="isEnrolled" (click)="goToPlayer()">
+            <span class="material-icons">play_circle</span> Go to Course
+          </button>
+
+          <!-- Not enrolled -->
+          <button
+            class="btn-enroll"
+            *ngIf="!isEnrolled"
+            [disabled]="isEnrolling"
+            (click)="onEnrollOrBuy()"
+            id="enroll-btn"
+          >
+            <span class="material-icons spin" *ngIf="isEnrolling">refresh</span>
+            <span *ngIf="!isEnrolling">{{ course.price === 0 ? 'Enroll for Free' : 'Buy Now' }}</span>
+            <span *ngIf="isEnrolling">Processing…</span>
+          </button>
+
+          <p class="enroll-note" *ngIf="!isLoggedIn">
+            <a routerLink="/auth/login">Log in</a> or <a routerLink="/auth/register">register</a> to enroll
+          </p>
+
+          <ul class="includes-list">
+            <li *ngIf="totalLessons > 0"><span class="material-icons">play_lesson</span> {{ totalLessons }} lessons</li>
+            <li><span class="material-icons">devices</span> Access on all devices</li>
+            <li><span class="material-icons">workspace_premium</span> Certificate of completion</li>
+            <li><span class="material-icons">all_inclusive</span> Lifetime access</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile CTA -->
+  <div class="mobile-cta">
+    <div class="mobile-price">{{ course.price === 0 ? 'Free' : ('₹' + (course.price | number)) }}</div>
+    <button class="btn-enroll-sm" (click)="onEnrollOrBuy()" *ngIf="!isEnrolled">
+      {{ course.price === 0 ? 'Enroll Free' : 'Buy Now' }}
+    </button>
+    <button class="btn-enroll-sm go" (click)="goToPlayer()" *ngIf="isEnrolled">
+      Go to Course
+    </button>
+  </div>
+
+  <!-- ─── Tabs ────────────────────────────────────────────────────────────── -->
+  <div class="tabs-bar">
+    <div class="container">
+      <button class="tab-btn" [class.active]="activeTab === 'overview'"    (click)="activeTab = 'overview'">Overview</button>
+      <button class="tab-btn" [class.active]="activeTab === 'curriculum'"  (click)="activeTab = 'curriculum'">Curriculum</button>
+    </div>
+  </div>
+
+  <div class="container detail-body">
+
+    <!-- ─── Overview Tab ───────────────────────────────────────────────────── -->
+    <div *ngIf="activeTab === 'overview'" class="tab-content">
+
+      <!-- What you'll learn -->
+      <div class="content-card" *ngIf="course.learningObjectives?.length">
+        <h2>What you'll learn</h2>
+        <div class="objectives-grid">
+          <div class="objective" *ngFor="let obj of course.learningObjectives">
+            <span class="material-icons">check_circle</span>
+            <span>{{ obj }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="content-card" *ngIf="course.description">
+        <h2>Course Description</h2>
+        <div class="description-body" [innerHTML]="course.description"></div>
+      </div>
+    </div>
+
+    <!-- ─── Curriculum Tab ─────────────────────────────────────────────────── -->
+    <div *ngIf="activeTab === 'curriculum'" class="tab-content">
+      <div class="content-card" *ngIf="course.sections?.length">
+        <div class="curriculum-header">
+          <h2>Course Content</h2>
+          <div class="curriculum-meta">
+            <span>{{ course.sections?.length }} sections</span>
+            <span>·</span>
+            <span>{{ totalLessons }} lessons</span>
+          </div>
+          <div class="expand-controls">
+            <button (click)="expandAll()">Expand all</button>
+            <button (click)="collapseAll()">Collapse all</button>
+          </div>
+        </div>
+
+        <div class="sections-list">
+          <div class="section-item" *ngFor="let section of course.sections">
+            <!-- Section Header -->
+            <button class="section-header" (click)="toggleSection(section.sectionId)">
+              <span class="material-icons expand-icon" [class.open]="expandedSections.has(section.sectionId)">
+                expand_more
+              </span>
+              <span class="section-title">{{ section.title }}</span>
+              <span class="section-meta">{{ section.lessons?.length || 0 }} lessons</span>
+            </button>
+
+            <!-- Lessons -->
+            <div class="lessons-list" [class.open]="expandedSections.has(section.sectionId)">
+              <div class="lesson-row" *ngFor="let lesson of section.lessons">
+                <span class="material-icons lesson-icon">{{ getLessonIcon(lesson.lessonType || lesson.type) }}</span>
+                <span class="lesson-title">{{ lesson.title }}</span>
+                <span class="free-badge" *ngIf="lesson.isFreePreview">Preview</span>
+                <span class="lesson-duration">{{ formatDuration(lesson.durationSeconds) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="content-card" *ngIf="!course.sections?.length">
+        <p>No curriculum available yet.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Not found -->
+<div class="not-found" *ngIf="!isLoading && !course">
+  <span class="material-icons">search_off</span>
+  <h2>Course not found</h2>
+  <a routerLink="/courses" class="btn btn-outline">Browse all courses</a>
+</div>

@@ -1,0 +1,115 @@
+<div class="instructor-page">
+  <div class="container">
+
+  <!-- ─── Header ──────────────────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="header-text">
+      <h1>{{ greeting }}, {{ instructorName }} 👋</h1>
+      <p>Here's how your courses are performing today</p>
+    </div>
+    <a routerLink="/instructor/courses/new" class="btn-create" id="create-course-btn">
+      <span class="material-icons">add</span> Create New Course
+    </a>
+  </div>
+
+  <!-- ─── Stats Grid ───────────────────────────────────────────────────── -->
+  <div class="stats-grid" *ngIf="!isLoading">
+    <div class="stat-card" *ngFor="let s of statCards" [style.--stat-color]="s.color" [style.--stat-bg]="s.bg">
+      <div class="stat-icon-wrap">
+        <span class="material-icons">{{ s.icon }}</span>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value">{{ getStatValue(s.key) }}</div>
+        <div class="stat-label">{{ s.label }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Skeleton -->
+  <div class="stats-grid" *ngIf="isLoading">
+    <div class="stat-card skeleton-card" *ngFor="let i of [1,2,3]">
+      <div class="skeleton sk-icon"></div>
+      <div style="flex:1"><div class="skeleton sk-val"></div><div class="skeleton sk-lbl"></div></div>
+    </div>
+  </div>
+
+  <!-- ─── Content Grid ──────────────────────────────────────────────────── -->
+  <div class="dashboard-grid">
+
+    <!-- Recent Courses -->
+    <div class="dash-card">
+      <div class="card-header">
+        <h3>Your Courses</h3>
+        <a routerLink="/instructor/courses" class="view-all">View all <span class="material-icons">arrow_forward</span></a>
+      </div>
+
+      <div class="course-list" *ngIf="!isLoading">
+        <div class="course-row" *ngFor="let c of recentCourses">
+          <div class="course-row-thumb">
+            <img *ngIf="c.thumbnailUrl" [src]="c.thumbnailUrl" [alt]="c.title"/>
+            <div class="thumb-ph" *ngIf="!c.thumbnailUrl"><span class="material-icons">play_lesson</span></div>
+          </div>
+          <div class="course-row-info">
+            <div class="cr-title">{{ c.title }}</div>
+            <div class="cr-meta">
+              <span class="status-badge" [class]="getStatusClass(c.status)">{{ c.status }}</span>
+              <span class="material-icons">people</span>{{ c.enrollmentCount | number }} students
+              <span *ngIf="c.averageRating > 0">
+                <span class="material-icons">star</span>{{ c.averageRating.toFixed(1) }}
+              </span>
+            </div>
+          </div>
+          <div class="course-row-actions">
+            <a [routerLink]="['/instructor/courses', c.courseId, 'edit']" class="action-btn" title="Edit">
+              <span class="material-icons">edit</span>
+            </a>
+            <a [routerLink]="['/courses', c.slug]" class="action-btn" title="Preview" target="_blank">
+              <span class="material-icons">open_in_new</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Skeleton -->
+      <div class="course-list" *ngIf="isLoading">
+        <div class="course-row" *ngFor="let i of [1,2,3]">
+          <div class="skeleton sk-thumb-sm"></div>
+          <div style="flex:1"><div class="skeleton" style="height:14px;width:80%;margin-bottom:8px"></div><div class="skeleton" style="height:12px;width:50%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="dash-card quick-actions">
+      <div class="card-header"><h3>Quick Actions</h3></div>
+      <div class="action-grid">
+        <a routerLink="/instructor/courses/new" class="qa-item">
+          <div class="qa-icon" style="background:rgba(57,73,171,0.1);color:#3949AB"><span class="material-icons">add_circle</span></div>
+          <span>New Course</span>
+        </a>
+        <a routerLink="/instructor/analytics" class="qa-item">
+          <div class="qa-icon" style="background:rgba(5,150,105,0.1);color:#059669"><span class="material-icons">bar_chart</span></div>
+          <span>Analytics</span>
+        </a>
+        <a routerLink="/student/profile" class="qa-item">
+          <div class="qa-icon" style="background:rgba(217,119,6,0.1);color:#D97706"><span class="material-icons">person</span></div>
+          <span>My Profile</span>
+        </a>
+        <a routerLink="/instructor/courses" class="qa-item">
+          <div class="qa-icon" style="background:rgba(124,58,237,0.1);color:#7C3AED"><span class="material-icons">library_books</span></div>
+          <span>All Courses</span>
+        </a>
+      </div>
+
+      <div class="tip-box">
+        <span class="material-icons">tips_and_updates</span>
+        <div>
+          <strong>Pro Tip</strong>
+          <p>Courses with preview lessons get 3× more enrollments. Add free preview lessons to your latest course!</p>
+        </div>
+      </div>
+    </div>
+
+  </div> <!-- /.dashboard-grid -->
+  </div> <!-- /.container -->
+</div> <!-- /.instructor-page -->

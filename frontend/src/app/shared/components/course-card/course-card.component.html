@@ -1,0 +1,34 @@
+<a class="course-card" [routerLink]="['/courses', course.slug]">
+  <!-- Thumbnail -->
+  <div class="thumb-wrap">
+    <img *ngIf="course.thumbnailUrl" [src]="course.thumbnailUrl" [alt]="course.title" class="thumb-img" />
+    <div *ngIf="!course.thumbnailUrl" class="thumb-placeholder">
+      <span class="material-icons">play_lesson</span>
+    </div>
+    <span class="level-badge level-{{ levelClass }}">{{ course.level }}</span>
+    <div *ngIf="showBadge" class="bestseller-badge">Bestseller</div>
+  </div>
+
+  <!-- Body -->
+  <div class="card-body">
+    <div class="category-tag">{{ course.categoryName }}</div>
+    <h3 class="course-title">{{ course.title }}</h3>
+    <p class="course-subtitle">{{ course.subtitle | truncate:70 }}</p>
+
+    <div class="instructor-row">
+      <div class="av">{{ getInitials(course.instructorName) }}</div>
+      <span>{{ course.instructorName }}</span>
+    </div>
+
+    <div class="footer-row">
+      <div class="stats">
+        <span class="material-icons">schedule</span>
+        <span>{{ course.durationMinutes | duration }}</span>
+        <span class="dot">·</span>
+        <span class="material-icons">people</span>
+        <span>{{ course.enrollmentCount | number }}</span>
+      </div>
+      <div class="price">₹{{ course.price | number }}</div>
+    </div>
+  </div>
+</a>

@@ -20,12 +20,28 @@ public class CourseDbContext : DbContext
         {
             e.HasKey(c => c.CourseId);
             e.Property(c => c.Title).IsRequired().HasMaxLength(200);
+            e.Property(c => c.Subtitle).HasMaxLength(500);
             e.Property(c => c.Slug).IsRequired().HasMaxLength(250);
             e.HasIndex(c => c.Slug).IsUnique();
             e.Property(c => c.Description).IsRequired();
             e.Property(c => c.Status).HasConversion<string>();
             e.Property(c => c.Level).HasConversion<string>();
             e.Property(c => c.Price).HasColumnType("decimal(18,2)");
+            e.Property(c => c.InstructorName).HasMaxLength(200);
+            e.Property(c => c.AverageRating).HasColumnType("decimal(3,2)");
+            
+            // Serialize Lists as JSON - handle NULL values
+            e.Property(c => c.Tags)
+             .HasConversion(
+                 v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                 v => string.IsNullOrEmpty(v) ? new List<string>() : System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>()
+             );
+            
+            e.Property(c => c.LearningObjectives)
+             .HasConversion(
+                 v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                 v => string.IsNullOrEmpty(v) ? new List<string>() : System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>()
+             );
 
             // One course → many sections
             e.HasMany(c => c.Sections)

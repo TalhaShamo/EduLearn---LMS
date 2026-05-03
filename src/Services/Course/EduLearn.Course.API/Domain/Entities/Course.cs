@@ -9,6 +9,7 @@ public class Course
     public Guid         CourseId         { get; private set; } = Guid.NewGuid();
     public Guid         InstructorId     { get; private set; }  // FK to Identity.API user
     public string       Title            { get; private set; } = string.Empty;
+    public string?      Subtitle         { get; private set; }
     public string       Slug             { get; private set; } = string.Empty; // URL-friendly title
     public string       Description      { get; private set; } = string.Empty;
     public string       Category         { get; private set; } = string.Empty;
@@ -18,6 +19,16 @@ public class Course
     public decimal      Price            { get; private set; }   // 0 = free
     public CourseStatus Status           { get; private set; } = CourseStatus.Draft;
     public string?      AdminFeedback    { get; private set; }   // Populated when admin requests changes
+    
+    // Additional metadata
+    public string?      InstructorName   { get; private set; }
+    public int          EnrollmentCount  { get; private set; } = 0;
+    public decimal      AverageRating    { get; private set; } = 0;
+    public int          ReviewCount      { get; private set; } = 0;
+    public int          DurationMinutes  { get; private set; } = 0;
+    public List<string> Tags             { get; private set; } = new();
+    public List<string> LearningObjectives { get; private set; } = new();
+    
     public DateTime     CreatedAt        { get; private set; } = DateTime.UtcNow;
     public DateTime     UpdatedAt        { get; private set; } = DateTime.UtcNow;
 
@@ -44,15 +55,24 @@ public class Course
     }
 
     // Business rules: transition methods ─────────────────────────
-    public void Update(string title, string description, string category, CourseLevel level, decimal price)
+    public void Update(string title, string description, string category, CourseLevel level, decimal price, string? subtitle = null)
     {
         Title       = title.Trim();
+        Subtitle    = subtitle?.Trim();
         Slug        = GenerateSlug(title);
         Description = description.Trim();
         Category    = category;
         Level       = level;
         Price       = price;
         UpdatedAt   = DateTime.UtcNow;
+    }
+
+    public void SetMetadata(string? instructorName = null, List<string>? tags = null, List<string>? learningObjectives = null)
+    {
+        if (instructorName != null) InstructorName = instructorName;
+        if (tags != null) Tags = tags;
+        if (learningObjectives != null) LearningObjectives = learningObjectives;
+        UpdatedAt = DateTime.UtcNow;
     }
 
     public void SetThumbnail(string url) { ThumbnailUrl = url; UpdatedAt = DateTime.UtcNow; }
@@ -88,9 +108,15 @@ public class Course
         UpdatedAt = DateTime.UtcNow;
     }
 
-    // Generate a URL slug from the title (e.g., "Intro to C#" → "intro-to-c")
-    private static string GenerateSlug(string title) =>
-        System.Text.RegularExpressions.Regex
+    // Generate a URL slug from the title (e.g., "Intro to C#" → "intro-to-c-abc123")
+    private static string GenerateSlug(string title)
+    {
+        var baseSlug = System.Text.RegularExpressions.Regex
             .Replace(title.ToLowerInvariant().Trim(), @"[^a-z0-9\s-]", "")
             .Replace(" ", "-");
+        
+        // Append a short unique identifier to avoid duplicates
+        var uniqueId = Guid.NewGuid().ToString("N").Substring(0, 8);
+        return $"{baseSlug}-{uniqueId}";
+    }
 }

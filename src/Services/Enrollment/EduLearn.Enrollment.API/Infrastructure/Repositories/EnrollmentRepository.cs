@@ -36,6 +36,14 @@ public class EnrollmentRepository : BaseRepository<EnrollmentEntity>, IEnrollmen
         await _db.Enrollments
                  .Include(e => e.LessonProgresses)
                  .FirstOrDefaultAsync(e => e.EnrollmentId == enrollmentId);
+
+    public async Task<IEnumerable<EnrollmentEntity>> GetAllAsync() =>
+        await _db.Enrollments.ToListAsync();
+
+    public async Task<IEnumerable<EnrollmentEntity>> GetByCourseAsync(Guid courseId) =>
+        await _db.Enrollments
+                 .Where(e => e.CourseId == courseId)
+                 .ToListAsync();
 }
 
 // ── LESSON PROGRESS REPOSITORY ────────────────────────────────

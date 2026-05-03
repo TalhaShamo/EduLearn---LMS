@@ -30,6 +30,9 @@ builder.Services.AddScoped<ILessonProgressRepository, LessonProgressRepository>(
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 builder.Services.AddFluentValidationAutoValidation();
 
+// Register HttpClient for calling other microservices
+builder.Services.AddHttpClient();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(opts => opts.TokenValidationParameters = new TokenValidationParameters
     {

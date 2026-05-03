@@ -18,6 +18,7 @@ public interface IRepository<T> where T : class
 public interface ICourseRepository : IRepository<CourseEntity>
 {
     Task<CourseEntity?> GetWithSectionsAsync(Guid courseId);          // Eagerly load sections + lessons
+    Task<CourseEntity?> GetBySlugAsync(string slug);                  // Get course by slug
     Task<IEnumerable<CourseEntity>> GetPublishedPagedAsync(int page, int pageSize, string? search, string? category);
     Task<IEnumerable<CourseEntity>> GetByInstructorAsync(Guid instructorId);
     Task<IEnumerable<CourseEntity>> GetPendingReviewAsync();          // Admin approval queue

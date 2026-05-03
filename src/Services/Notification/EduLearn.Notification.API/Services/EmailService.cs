@@ -30,11 +30,25 @@ public class EmailService
 
         using var client = new SmtpClient();
 
-        // MailHog accepts plain connection (no TLS) on port 1025
-        await client.ConnectAsync(
-            _config["Email:SmtpHost"]!,
-            int.Parse(_config["Email:SmtpPort"]!),
-            SecureSocketOptions.None);
+        var smtpHost = _config["Email:SmtpHost"]!;
+        var smtpPort = int.Parse(_config["Email:SmtpPort"]!);
+        var smtpUsername = _config["Email:SmtpUsername"];
+        var smtpPassword = _config["Email:SmtpPassword"];
+
+        // Determine security options based on port and configuration
+        var secureSocketOptions = smtpPort == 465 
+            ? SecureSocketOptions.SslOnConnect  // Port 465 uses SSL
+            : smtpPort == 587 
+                ? SecureSocketOptions.StartTls  // Port 587 uses STARTTLS
+                : SecureSocketOptions.None;     // Port 1025 (MailHog) uses no encryption
+
+        await client.ConnectAsync(smtpHost, smtpPort, secureSocketOptions);
+
+        // Authenticate if credentials are provided (Gmail, SendGrid, etc.)
+        if (!string.IsNullOrEmpty(smtpUsername) && !string.IsNullOrEmpty(smtpPassword))
+        {
+            await client.AuthenticateAsync(smtpUsername, smtpPassword);
+        }
 
         await client.SendAsync(message);
         await client.DisconnectAsync(true);

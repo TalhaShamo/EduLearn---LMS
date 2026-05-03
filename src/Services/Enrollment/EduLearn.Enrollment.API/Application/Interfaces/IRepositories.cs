@@ -19,6 +19,10 @@ public interface IEnrollmentRepository : IRepository<EnrollmentEntity>
     Task<IEnumerable<EnrollmentEntity>> GetByStudentAsync(Guid studentId);
     // Get enrollment with full lesson progress loaded
     Task<EnrollmentEntity?> GetWithProgressAsync(Guid enrollmentId);
+    // Get all enrollments (Admin only)
+    Task<IEnumerable<EnrollmentEntity>> GetAllAsync();
+    // Get all enrollments for a specific course
+    Task<IEnumerable<EnrollmentEntity>> GetByCourseAsync(Guid courseId);
 }
 
 public interface ILessonProgressRepository : IRepository<LessonProgress>

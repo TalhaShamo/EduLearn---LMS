@@ -115,3 +115,33 @@ public class CertificateIssuedConsumer : IConsumer<CertificateIssuedEvent>
             EmailTemplates.CertificateReady(e.StudentName, e.CourseTitle, e.DownloadUrl));
     }
 }
+
+// ── EMAIL VERIFICATION ────────────────────────────────────────
+public class EmailVerificationConsumer : IConsumer<EmailVerificationRequestedEvent>
+{
+    private readonly EmailService _email;
+    public EmailVerificationConsumer(EmailService email) => _email = email;
+
+    public async Task Consume(ConsumeContext<EmailVerificationRequestedEvent> ctx)
+    {
+        var e = ctx.Message;
+        await _email.SendAsync(e.Email, e.FullName,
+            "Verify Your EduLearn Email",
+            EmailTemplates.EmailVerification(e.FullName, e.VerificationLink));
+    }
+}
+
+// ── PASSWORD RESET ────────────────────────────────────────────
+public class PasswordResetConsumer : IConsumer<PasswordResetRequestedEvent>
+{
+    private readonly EmailService _email;
+    public PasswordResetConsumer(EmailService email) => _email = email;
+
+    public async Task Consume(ConsumeContext<PasswordResetRequestedEvent> ctx)
+    {
+        var e = ctx.Message;
+        await _email.SendAsync(e.Email, e.FullName,
+            "Reset Your EduLearn Password",
+            EmailTemplates.PasswordReset(e.FullName, e.ResetLink));
+    }
+}

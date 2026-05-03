@@ -1,0 +1,110 @@
+<div class="instructor-page">
+  <div class="container">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1>Analytics</h1>
+      <p>Your earnings and performance overview</p>
+    </div>
+  </div>
+
+  <!-- Skeleton -->
+  <ng-container *ngIf="isLoading">
+    <div class="stats-grid">
+      <div class="stat-card skeleton-card" *ngFor="let i of [1,2,3,4]">
+        <div class="skeleton sk-icon"></div>
+        <div style="flex:1">
+          <div class="skeleton sk-val"></div>
+          <div class="skeleton sk-lbl"></div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Stats -->
+  <div class="stats-grid" *ngIf="!isLoading">
+    <div class="stat-card" style="--stat-color:#3949AB;--stat-bg:rgba(57,73,171,0.1)">
+      <div class="stat-icon-wrap"><span class="material-icons">payments</span></div>
+      <div class="stat-info">
+        <div class="stat-value">₹{{ totalRevenue | number }}</div>
+        <div class="stat-label">Total Revenue</div>
+      </div>
+    </div>
+    <div class="stat-card" style="--stat-color:#059669;--stat-bg:rgba(5,150,105,0.1)">
+      <div class="stat-icon-wrap"><span class="material-icons">people</span></div>
+      <div class="stat-info">
+        <div class="stat-value">{{ totalStudents | number }}</div>
+        <div class="stat-label">Total Students</div>
+      </div>
+    </div>
+    <div class="stat-card" style="--stat-color:#D97706;--stat-bg:rgba(217,119,6,0.1)">
+      <div class="stat-icon-wrap"><span class="material-icons">workspace_premium</span></div>
+      <div class="stat-info">
+        <div class="stat-value">{{ totalCompletions | number }}</div>
+        <div class="stat-label">Completions</div>
+      </div>
+    </div>
+    <div class="stat-card" style="--stat-color:#7C3AED;--stat-bg:rgba(124,58,237,0.1)">
+      <div class="stat-icon-wrap"><span class="material-icons">star</span></div>
+      <div class="stat-info">
+        <div class="stat-value">{{ avgRating.toFixed(2) }}</div>
+        <div class="stat-label">Avg. Rating</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enrollment Chart -->
+  <div class="chart-card" *ngIf="!isLoading">
+    <div class="card-header-row">
+      <h3>Monthly Enrollments</h3>
+      <span class="chart-legend"><span class="dot primary"></span> Enrollments</span>
+    </div>
+    <div class="bar-chart">
+      <div class="bar-col" *ngFor="let p of chartData">
+        <div class="bar-wrap">
+          <div class="bar-tooltip">
+            <strong>{{ p.enrollments | number }}</strong> enrollments<br/>
+            ₹{{ p.revenue | number }}
+          </div>
+          <div class="bar" [style.height.%]="barHeight(p.enrollments)"></div>
+        </div>
+        <div class="bar-label">{{ p.month }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Per-course Performance Table -->
+  <div class="perf-card" *ngIf="!isLoading">
+    <div class="card-header-row">
+      <h3>Course Performance</h3>
+    </div>
+    <div class="perf-table">
+      <div class="perf-header">
+        <span>Course</span>
+        <span>Students</span>
+        <span>Revenue</span>
+        <span>Rating</span>
+        <span>Completion</span>
+      </div>
+      <div class="perf-row" *ngFor="let c of coursePerf">
+        <div class="perf-title">{{ c.title }}</div>
+        <div class="perf-num">{{ c.enrollments | number }}</div>
+        <div class="perf-num green">₹{{ c.revenue | number }}</div>
+        <div class="perf-rating">
+          <span class="material-icons">star</span>{{ c.rating.toFixed(1) }}
+        </div>
+        <div class="perf-completion">
+          <div class="comp-track">
+            <div class="comp-fill" [style.width.%]="c.completionRate"
+              [class.high]="c.completionRate >= 70" [class.mid]="c.completionRate >= 50 && c.completionRate < 70">
+            </div>
+          </div>
+          <span>{{ c.completionRate }}%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div> <!-- /.container -->
+</div> <!-- /.instructor-page -->

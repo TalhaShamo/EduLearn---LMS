@@ -1,0 +1,115 @@
+<div class="checkout-page">
+  <div class="container checkout-layout">
+
+    <!-- ─── Loading ──────────────────────────────────────────────────── -->
+    <div class="loading-wrap" *ngIf="isLoading">
+      <div class="skeleton sk-title"></div>
+      <div class="skeleton sk-sub"></div>
+    </div>
+
+    <ng-container *ngIf="!isLoading && course">
+
+      <!-- ─── Left: Order Summary ──────────────────────────────────── -->
+      <div class="order-summary">
+        <div class="back-link">
+          <a [routerLink]="['/courses', course.slug]">
+            <span class="material-icons">arrow_back</span> Back to course
+          </a>
+        </div>
+
+        <h1>Complete your order</h1>
+        <p class="checkout-subtitle">You're one step away from starting your learning journey</p>
+
+        <div class="course-preview-card">
+          <div class="preview-thumb">
+            <img *ngIf="course.thumbnailUrl" [src]="course.thumbnailUrl" [alt]="course.title" />
+            <div class="thumb-placeholder" *ngIf="!course.thumbnailUrl">
+              <span class="material-icons">play_lesson</span>
+            </div>
+          </div>
+          <div class="preview-info">
+            <div class="preview-category">{{ course.categoryName }}</div>
+            <h3>{{ course.title }}</h3>
+            <p>{{ course.subtitle }}</p>
+            <div class="preview-meta">
+              <span class="material-icons">person</span>{{ course.instructorName }}
+              <span class="dot">·</span>
+              <span class="material-icons">schedule</span>{{ course.durationMinutes | duration }}
+              <span class="dot">·</span>
+              <span class="level-chip level-{{ course.level.toLowerCase() }}">{{ course.level }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="what-included">
+          <h4>What's included</h4>
+          <ul>
+            <li><span class="material-icons">play_circle</span> {{ course.durationMinutes | duration }} of on-demand video</li>
+            <li><span class="material-icons">devices</span> Access on all devices</li>
+            <li><span class="material-icons">workspace_premium</span> Certificate of completion</li>
+            <li><span class="material-icons">all_inclusive</span> Full lifetime access</li>
+            <li><span class="material-icons">quiz</span> Quizzes and assignments</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ─── Right: Payment Card ──────────────────────────────────── -->
+      <div class="payment-card">
+        <div class="secure-badge">
+          <span class="material-icons">lock</span>
+          <span>Secure Checkout</span>
+        </div>
+
+        <div class="price-breakdown">
+          <div class="price-row">
+            <span>Course price</span>
+            <span>₹{{ course.price | number }}</span>
+          </div>
+          <div class="price-row discount" *ngIf="false">
+            <span>Discount</span>
+            <span class="green">- ₹0</span>
+          </div>
+          <div class="price-row total">
+            <span>Total</span>
+            <span>₹{{ course.price | number }}</span>
+          </div>
+        </div>
+
+        <div class="alert alert-error" *ngIf="paymentError">
+          <span class="material-icons">error_outline</span>
+          <span>{{ paymentError }}</span>
+        </div>
+
+        <button
+          class="btn-pay"
+          (click)="onPayNow()"
+          [disabled]="isProcessing"
+          id="pay-now-btn"
+        >
+          <span class="material-icons spin" *ngIf="isProcessing">refresh</span>
+          <span class="material-icons" *ngIf="!isProcessing">payment</span>
+          <span>{{ isProcessing ? 'Processing…' : 'Pay ₹' + (course.price | number) }}</span>
+        </button>
+
+        <div class="powered-by">
+          <span>Secured by</span>
+          <strong>Razorpay</strong>
+        </div>
+
+        <div class="guarantee">
+          <span class="material-icons">verified_user</span>
+          <span>30-day money-back guarantee</span>
+        </div>
+
+        <div class="student-info">
+          <div class="student-av">{{ authService.currentUser?.fullName?.[0] ?? 'U' }}</div>
+          <div>
+            <div class="s-name">{{ authService.currentUser?.fullName }}</div>
+            <div class="s-email">{{ authService.currentUser?.email }}</div>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+  </div>
+</div>

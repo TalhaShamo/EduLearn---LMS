@@ -1,0 +1,140 @@
+<div class="search-page">
+
+  <!-- ─── Page Header ─────────────────────────────────────────────────── -->
+  <div class="page-hero">
+    <div class="container">
+      <h1>Explore All Courses</h1>
+      <p>Discover {{ totalCount | number }} courses across technology, design, business and more</p>
+
+      <div class="hero-search-bar" [formGroup]="filterForm">
+        <span class="material-icons">search</span>
+        <input
+          id="course-search-input"
+          type="text"
+          formControlName="query"
+          placeholder="Search for any topic, skill or instructor…"
+        />
+        <button class="clear-btn" *ngIf="filterForm.get('query')?.value" (click)="filterForm.get('query')?.setValue('')">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Category Pills ───────────────────────────────────────────────── -->
+  <div class="category-bar">
+    <div class="container cat-scroll">
+      <button
+        class="cat-pill"
+        *ngFor="let cat of categories"
+        [class.active]="activeCategory === cat"
+        (click)="setCategory(cat)"
+      >{{ cat }}</button>
+    </div>
+  </div>
+
+  <div class="container search-layout" [formGroup]="filterForm">
+
+    <!-- ─── Sidebar Filters ──────────────────────────────────────────── -->
+    <aside class="filter-sidebar" [class.show]="showFilters">
+      <div class="sidebar-header">
+        <h3>Filters</h3>
+        <button class="clear-all" *ngIf="hasActiveFilters" (click)="clearFilters()">Clear all</button>
+      </div>
+
+      <!-- Level -->
+      <div class="filter-section">
+        <h4>Level</h4>
+        <label class="check-row" *ngFor="let lvl of levels">
+          <input type="checkbox"
+            [checked]="selectedLevels.has(lvl)"
+            (change)="toggleLevel(lvl)"
+          />
+          <span class="check-box"></span>
+          <span class="check-label">{{ lvl }}</span>
+          <span class="check-tag level-{{ lvl.toLowerCase() }}">{{ lvl }}</span>
+        </label>
+      </div>
+    </aside>
+
+    <!-- ─── Main Content ──────────────────────────────────────────────── -->
+    <main class="results-area">
+
+      <!-- Toolbar -->
+      <div class="results-toolbar">
+        <div class="results-count">
+          <span *ngIf="!isLoading"><strong>{{ totalCount | number }}</strong> results</span>
+          <span *ngIf="isLoading">Searching…</span>
+
+          <!-- Active filter chips -->
+          <div class="active-chips">
+            <span class="chip" *ngIf="activeCategory !== 'All'">
+              {{ activeCategory }}
+              <button (click)="setCategory('All')"><span class="material-icons">close</span></button>
+            </span>
+            <span class="chip" *ngFor="let lvl of selectedLevels">
+              {{ lvl }}
+              <button (click)="toggleLevel(lvl)"><span class="material-icons">close</span></button>
+            </span>
+          </div>
+        </div>
+
+        <div class="toolbar-right">
+          <button class="filter-toggle hide-desktop" (click)="showFilters = !showFilters">
+            <span class="material-icons">tune</span> Filters
+          </button>
+          <select class="sort-select" formControlName="sortBy">
+            <option *ngFor="let opt of sortOptions" [value]="opt.value">{{ opt.label }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Skeleton -->
+      <div class="courses-grid" *ngIf="isLoading">
+        <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12]">
+          <div class="skeleton thumb-sk"></div>
+          <div class="sk-body">
+            <div class="skeleton sk-line short"></div>
+            <div class="skeleton sk-line"></div>
+            <div class="skeleton sk-line"></div>
+            <div class="skeleton sk-line medium"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Grid -->
+      <div class="courses-grid" *ngIf="!isLoading && courses.length > 0">
+        <app-course-card
+          *ngFor="let c of courses"
+          [course]="c"
+          [showBadge]="c.enrollmentCount > 5000"
+        ></app-course-card>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="!isLoading && courses.length === 0">
+        <span class="material-icons empty-icon">search_off</span>
+        <h3>No courses found</h3>
+        <p>Try adjusting your filters or search term</p>
+        <button class="btn btn-outline" (click)="clearFilters()">Clear all filters</button>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination" *ngIf="totalPages > 1 && !isLoading">
+        <button class="pg-btn" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+          <span class="material-icons">chevron_left</span>
+        </button>
+        <button
+          class="pg-btn"
+          *ngFor="let pg of pageNumbers"
+          [class.active]="pg === currentPage"
+          (click)="goToPage(pg)"
+        >{{ pg }}</button>
+        <button class="pg-btn" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+          <span class="material-icons">chevron_right</span>
+        </button>
+      </div>
+
+    </main>
+  </div>
+</div>

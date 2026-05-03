@@ -44,6 +44,9 @@ builder.Services.AddMediatR(cfg =>
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
 
+// ── HTTP CLIENT FACTORY ───────────────────────────────────────
+builder.Services.AddHttpClient();
+
 // ── JWT AUTHENTICATION ────────────────────────────────────────
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(opts =>
@@ -77,11 +80,20 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
-// ── CORS: open for Angular ────────────────────────────────────
+// ── CORS: allow local frontend dev servers ────────────────────
+// `ng serve` may run on 4200/4201/etc, and devs often use 127.0.0.1 instead of localhost.
 builder.Services.AddCors(opts =>
     opts.AddPolicy("Angular", p =>
-        p.WithOrigins("http://localhost:4200")
-         .AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
+        p.SetIsOriginAllowed(origin =>
+         {
+             if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri)) return false;
+             return uri.Scheme is "http" or "https"
+                 && (uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase)
+                     || uri.Host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase));
+         })
+         .AllowAnyHeader()
+         .AllowAnyMethod()
+         .AllowCredentials()));
 
 // ── SWAGGER with JWT bearer support ──────────────────────────
 builder.Services.AddEndpointsApiExplorer();

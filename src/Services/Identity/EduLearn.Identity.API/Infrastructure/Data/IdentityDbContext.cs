@@ -11,6 +11,8 @@ public class IdentityDbContext : DbContext
 
     public DbSet<User>         Users         => Set<User>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<EmailVerificationToken> EmailVerificationTokens => Set<EmailVerificationToken>();
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
     protected override void OnModelCreating(ModelBuilder model)
     {
@@ -39,6 +41,24 @@ public class IdentityDbContext : DbContext
             entity.HasKey(t => t.Id);
             entity.Property(t => t.Token).IsRequired().HasMaxLength(512);
             entity.HasIndex(t => t.Token); // Index for fast token lookups
+        });
+
+        // ── EmailVerificationToken table configuration ───────
+        model.Entity<EmailVerificationToken>(entity =>
+        {
+            entity.HasKey(t => t.TokenId);
+            entity.Property(t => t.Token).IsRequired().HasMaxLength(100);
+            entity.HasIndex(t => t.Token); // Index for fast token lookups
+            entity.Property(t => t.UserId).IsRequired();
+        });
+
+        // ── PasswordResetToken table configuration ───────────
+        model.Entity<PasswordResetToken>(entity =>
+        {
+            entity.HasKey(t => t.TokenId);
+            entity.Property(t => t.Token).IsRequired().HasMaxLength(100);
+            entity.HasIndex(t => t.Token); // Index for fast token lookups
+            entity.Property(t => t.UserId).IsRequired();
         });
     }
 }

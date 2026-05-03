@@ -22,6 +22,66 @@ namespace EduLearn.Identity.API.Infrastructure.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("EduLearn.Identity.API.Domain.Entities.EmailVerificationToken", b =>
+                {
+                    b.Property<Guid>("TokenId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("TokenId");
+
+                    b.HasIndex("Token");
+
+                    b.ToTable("EmailVerificationTokens");
+                });
+
+            modelBuilder.Entity("EduLearn.Identity.API.Domain.Entities.PasswordResetToken", b =>
+                {
+                    b.Property<Guid>("TokenId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("TokenId");
+
+                    b.HasIndex("Token");
+
+                    b.ToTable("PasswordResetTokens");
+                });
+
             modelBuilder.Entity("EduLearn.Identity.API.Domain.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")

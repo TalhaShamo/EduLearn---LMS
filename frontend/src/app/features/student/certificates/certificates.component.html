@@ -1,0 +1,28 @@
+﻿<div class="dashboard-page">
+  <div class="container">
+    <div class="page-header">
+      <div><h1>My Certificates</h1><p>{{ certificates.length }} certificates earned</p></div>
+    </div>
+    <div class="certs-grid" *ngIf="!isLoading && certificates.length > 0">
+      <div class="cert-card" *ngFor="let c of certificates">
+        <div class="cert-header">
+          <span class="material-icons">workspace_premium</span>
+          <div class="cert-badge">Verified</div>
+        </div>
+        <div class="cert-body">
+          <div class="cert-label">Certificate of Completion</div>
+          <h3>{{ c.courseName }}</h3>
+          <p>Instructor: {{ c.instructorName }}</p>
+          <p class="cert-date">Issued: {{ c.issuedAt | date:'mediumDate' }}</p>
+          <p class="completion-message">🎉 Congratulations on completing this course!</p>
+        </div>
+      </div>
+    </div>
+    <div class="empty-state" *ngIf="!isLoading && certificates.length === 0">
+      <span class="material-icons">workspace_premium</span>
+      <h3>No certificates yet</h3>
+      <p>Complete a course to earn your first certificate</p>
+      <a routerLink="/student/my-learning" class="btn btn-primary" style="display:inline-flex;padding:12px 24px;background:var(--color-primary);color:#fff;border-radius:var(--radius-md);text-decoration:none;font-weight:600">Go to My Learning</a>
+    </div>
+  </div>
+</div>

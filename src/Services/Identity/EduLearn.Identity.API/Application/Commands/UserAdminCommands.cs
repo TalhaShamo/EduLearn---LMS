@@ -57,3 +57,22 @@ public class ActivateUserCommandHandler : IRequestHandler<ActivateUserCommand>
         await _userRepo.SaveChangesAsync();
     }
 }
+
+// ── DELETE USER ───────────────────────────────────────────────
+public record DeleteUserCommand(Guid UserId) : IRequest;
+
+public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand>
+{
+    private readonly IUserRepository _userRepo;
+    public DeleteUserCommandHandler(IUserRepository r) => _userRepo = r;
+
+    public async Task Handle(DeleteUserCommand cmd, CancellationToken ct)
+    {
+        var user = await _userRepo.GetByIdAsync(cmd.UserId)
+                   ?? throw new NotFoundException("User", cmd.UserId);
+        
+        // Permanently delete user from database
+        _userRepo.Delete(user);
+        await _userRepo.SaveChangesAsync();
+    }
+}

@@ -1,0 +1,324 @@
+<div class="builder-page">
+
+  <!-- ─── Top Stepper ─────────────────────────────────────────────────── -->
+  <div class="builder-topbar">
+    <div class="builder-topbar-inner">
+      <a routerLink="/instructor/courses" class="back-link">
+        <span class="material-icons">arrow_back</span>
+        <span>{{ isEditMode ? 'Back to courses' : 'Cancel' }}</span>
+      </a>
+      <h2 class="builder-title">{{ isEditMode ? 'Edit Course' : 'Create New Course' }}</h2>
+
+      <div class="stepper">
+        <ng-container *ngFor="let s of steps; let i = index">
+          <button
+            class="step-btn"
+            [class.active]="currentStep === s.num"
+            [class.done]="currentStep > s.num"
+            (click)="goToStep(s.num)"
+          >
+            <div class="step-circle">
+              <span class="material-icons done-icon" *ngIf="currentStep > s.num">check</span>
+              <span *ngIf="currentStep <= s.num">{{ s.num }}</span>
+            </div>
+            <span class="step-label">{{ s.label }}</span>
+          </button>
+          <div class="step-connector" *ngIf="i < steps.length - 1" [class.done]="currentStep > s.num"></div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading overlay -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <div class="loader-spin"></div>
+    <p>Loading course…</p>
+  </div>
+
+  <div class="builder-body" *ngIf="!isLoading" [formGroup]="courseForm">
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         STEP 1 — Basic Info
+         ════════════════════════════════════════════════════════════════════ -->
+    <div class="step-panel" *ngIf="currentStep === 1">
+      <div class="panel-header">
+        <h2>Course Information</h2>
+        <p>Tell students what your course is about</p>
+      </div>
+
+      <div class="form-grid">
+        <!-- Title -->
+        <div class="form-field full-width">
+          <label class="field-label" for="title">
+            Course Title <span class="required">*</span>
+            <span class="char-count">{{ courseForm.get('title')?.value?.length ?? 0 }}/80</span>
+          </label>
+          <input id="title" type="text" formControlName="title" maxlength="80"
+            placeholder="e.g. Complete Angular 17 Masterclass: From Beginner to Expert"
+            class="field-input" [class.invalid]="courseForm.get('title')?.invalid && courseForm.get('title')?.touched" />
+          <span class="field-hint error" *ngIf="courseForm.get('title')?.hasError('minlength') && courseForm.get('title')?.touched">
+            Title must be at least 10 characters
+          </span>
+        </div>
+
+        <!-- Subtitle -->
+        <div class="form-field full-width">
+          <label class="field-label" for="subtitle">Course Subtitle <span class="required">*</span></label>
+          <input id="subtitle" type="text" formControlName="subtitle" maxlength="120"
+            placeholder="e.g. Learn Angular 17, NgRx, RxJS, Angular Material and more in this comprehensive course"
+            class="field-input" />
+          <span class="field-hint">Appears under the title on the course page. Make it compelling!</span>
+        </div>
+
+        <!-- Description -->
+        <div class="form-field full-width">
+          <label class="field-label" for="description">Description <span class="required">*</span></label>
+          <textarea id="description" formControlName="description" rows="6"
+            class="field-input"
+            placeholder="Describe what students will learn, who it's for, and what prerequisites are needed. Minimum 50 characters."></textarea>
+        </div>
+
+        <!-- Category -->
+        <div class="form-field">
+          <label class="field-label" for="category">Category <span class="required">*</span></label>
+          <div class="select-wrap">
+            <select id="category" formControlName="category" class="field-select">
+              <option value="" disabled>Select a category</option>
+              <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+            </select>
+            <span class="material-icons select-icon">expand_more</span>
+          </div>
+        </div>
+
+        <!-- Level -->
+        <div class="form-field">
+          <label class="field-label">Level <span class="required">*</span></label>
+          <div class="level-cards">
+            <label class="level-card" *ngFor="let lvl of levels" [class.selected]="courseForm.get('level')?.value === lvl">
+              <input type="radio" formControlName="level" [value]="lvl" hidden />
+              <span class="material-icons">
+                {{ lvl === 'Beginner' ? 'signal_cellular_1_bar' : lvl === 'Intermediate' ? 'signal_cellular_2_bar' : 'signal_cellular_alt' }}
+              </span>
+              <span>{{ lvl }}</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Language -->
+        <div class="form-field">
+          <label class="field-label" for="language">Language</label>
+          <div class="select-wrap">
+            <select id="language" formControlName="language" class="field-select">
+              <option *ngFor="let l of languages" [value]="l">{{ l }}</option>
+            </select>
+            <span class="material-icons select-icon">expand_more</span>
+          </div>
+        </div>
+
+        <!-- Tags -->
+        <div class="form-field">
+          <label class="field-label" for="tags">Tags <span class="optional">(optional)</span></label>
+          <input id="tags" type="text" formControlName="tags" class="field-input"
+            placeholder="Angular, TypeScript, RxJS (comma separated)" />
+          <span class="field-hint">Help students find your course with relevant keywords</span>
+        </div>
+
+        <!-- Thumbnail -->
+        <div class="form-field full-width">
+          <label class="field-label">Course Thumbnail</label>
+          <div class="thumbnail-uploader" (click)="thumbInput.click()">
+            <img *ngIf="thumbnailPreview" [src]="thumbnailPreview" alt="Thumbnail preview" class="thumb-preview" />
+            <div class="thumb-placeholder" *ngIf="!thumbnailPreview">
+              <span class="material-icons">add_photo_alternate</span>
+              <p>Click to upload thumbnail</p>
+              <span class="thumb-hint">Recommended: 1280×720 JPG or PNG</span>
+            </div>
+          </div>
+          <input #thumbInput type="file" accept="image/*" hidden (change)="onThumbnailChange($event)" />
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         STEP 2 — Curriculum
+         ════════════════════════════════════════════════════════════════════ -->
+    <div class="step-panel" *ngIf="currentStep === 2">
+      <div class="panel-header">
+        <h2>Course Curriculum</h2>
+        <p>Organize your content into sections and lessons — {{ sectionsArray.length }} sections, {{ lessonCount }} lessons</p>
+      </div>
+
+      <div class="curriculum-builder" formArrayName="sections">
+        <div class="section-block" *ngFor="let section of sectionsArray.controls; let si = index" [formGroupName]="si">
+
+          <!-- Section Header -->
+          <div class="section-header-bar">
+            <span class="material-icons drag-handle">drag_indicator</span>
+            <div class="section-num">Section {{ si + 1 }}</div>
+            <div class="section-title-field">
+              <input type="text" formControlName="title" class="section-input"
+                placeholder="e.g. Getting Started with Angular" />
+            </div>
+            <button type="button" class="icon-btn danger" (click)="removeSection(si)" *ngIf="sectionsArray.length > 1">
+              <span class="material-icons">delete</span>
+            </button>
+          </div>
+
+          <!-- Lessons -->
+          <div class="lessons-area" formArrayName="lessons">
+            <div class="lesson-block" *ngFor="let lesson of getLessonsArray(si).controls; let li = index" [formGroupName]="li">
+              <span class="material-icons drag-handle lesson-drag">drag_indicator</span>
+
+              <div class="lesson-type-select">
+                <select formControlName="lessonType" class="type-select">
+                  <option *ngFor="let t of lessonTypes" [value]="t">{{ t }}</option>
+                </select>
+              </div>
+
+              <input type="text" formControlName="title" class="lesson-input"
+                placeholder="e.g. Introduction to Components" />
+
+              <label class="preview-toggle" title="Mark as free preview">
+                <input type="checkbox" formControlName="isFreePreview" />
+                <span class="preview-pill" [class.active]="lesson.get('isFreePreview')?.value">
+                  <span class="material-icons">visibility</span> Preview
+                </span>
+              </label>
+
+              <!-- Video Upload Button (only for Video lessons) -->
+              <label *ngIf="lesson.get('lessonType')?.value === 'Video'" 
+                     class="video-upload-btn" 
+                     [class.uploaded]="lesson.get('videoUploaded')?.value"
+                     title="Upload video">
+                <input type="file" accept="video/*" 
+                       (change)="onVideoSelect($event, si, li)" 
+                       style="display: none;" />
+                <span class="material-icons">
+                  {{ lesson.get('videoUploaded')?.value ? 'check_circle' : 'upload' }}
+                </span>
+                {{ lesson.get('videoUploaded')?.value ? 'Uploaded' : 'Upload' }}
+              </label>
+
+              <button type="button" class="icon-btn danger" (click)="removeLesson(si, li)">
+                <span class="material-icons">close</span>
+              </button>
+            </div>
+          </div>
+
+          <button type="button" class="add-lesson-btn" (click)="addLesson(si)">
+            <span class="material-icons">add</span> Add Lesson
+          </button>
+        </div>
+      </div>
+
+      <button type="button" class="add-section-btn" (click)="addSection()">
+        <span class="material-icons">add_circle_outline</span> Add Section
+      </button>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         STEP 3 — Pricing
+         ════════════════════════════════════════════════════════════════════ -->
+    <div class="step-panel" *ngIf="currentStep === 3">
+      <div class="panel-header">
+        <h2>Pricing</h2>
+        <p>Set a competitive price for your course</p>
+      </div>
+
+      <div class="pricing-section">
+        <label class="free-toggle">
+          <input type="checkbox" formControlName="isFree" />
+          <div class="toggle-track"><div class="toggle-thumb"></div></div>
+          <div>
+            <div class="toggle-label">Make this course free</div>
+            <div class="toggle-sub">Free courses gain 10× more enrollments</div>
+          </div>
+        </label>
+
+        <div class="price-field-wrap" *ngIf="!courseForm.get('isFree')?.value">
+          <label class="field-label" for="price">Course Price (INR) <span class="required">*</span></label>
+          <div class="price-input-row">
+            <div class="currency-prefix">₹</div>
+            <input id="price" type="number" formControlName="price" min="0" class="price-input"
+              placeholder="e.g. 2999" />
+          </div>
+          <span class="field-hint">Students will see this price. Enter 0 for free.</span>
+
+          <div class="price-suggestions">
+            <p class="suggest-label">Popular price points:</p>
+            <button type="button" class="price-chip" *ngFor="let p of [499, 999, 1499, 1999, 2499, 2999, 3499, 4999]"
+              (click)="courseForm.get('price')?.setValue(p)">
+              ₹{{ p }}
+            </button>
+          </div>
+        </div>
+
+        <div class="free-notice" *ngIf="courseForm.get('isFree')?.value">
+          <span class="material-icons">info</span>
+          <span>Your course will be available to all students for free. You can change this later.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         STEP 4 — Publish
+         ════════════════════════════════════════════════════════════════════ -->
+    <div class="step-panel" *ngIf="currentStep === 4">
+      <div class="panel-header">
+        <h2>Ready to Publish?</h2>
+        <p>Review your course details before submitting for review</p>
+      </div>
+
+      <div class="review-grid">
+        <div class="review-item">
+          <div class="review-label"><span class="material-icons">title</span> Title</div>
+          <div class="review-val">{{ courseForm.get('title')?.value || '—' }}</div>
+        </div>
+        <div class="review-item">
+          <div class="review-label"><span class="material-icons">category</span> Category</div>
+          <div class="review-val">{{ courseForm.get('category')?.value || '—' }}</div>
+        </div>
+        <div class="review-item">
+          <div class="review-label"><span class="material-icons">signal_cellular_alt</span> Level</div>
+          <div class="review-val">{{ courseForm.get('level')?.value || '—' }}</div>
+        </div>
+        <div class="review-item">
+          <div class="review-label"><span class="material-icons">list</span> Curriculum</div>
+          <div class="review-val">{{ sectionsArray.length }} sections · {{ lessonCount }} lessons</div>
+        </div>
+        <div class="review-item">
+          <div class="review-label"><span class="material-icons">payments</span> Price</div>
+          <div class="review-val">{{ courseForm.get('isFree')?.value ? 'Free' : '₹' + courseForm.get('price')?.value }}</div>
+        </div>
+      </div>
+
+      <div class="publish-notice">
+        <span class="material-icons">info</span>
+        <p>After submission, our team will review your course. You'll be notified by email when it's approved (usually within 24–48 hours).</p>
+      </div>
+
+      <div class="publish-actions">
+        <button type="button" class="btn-draft" (click)="onSubmit(false)" [disabled]="isSaving">
+          <span class="material-icons">save</span>
+          {{ isSaving ? 'Saving…' : 'Save as Draft' }}
+        </button>
+        <button type="button" class="btn-publish" (click)="onSubmit(true)" [disabled]="isSaving || courseForm.invalid" id="publish-course-btn">
+          <span class="material-icons">{{ isSaving ? 'refresh' : 'rocket_launch' }}</span>
+          {{ isSaving ? 'Submitting…' : 'Submit for Review' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- ─── Step Navigation Footer ──────────────────────────────────────── -->
+    <div class="step-nav" *ngIf="currentStep < totalSteps">
+      <button type="button" class="btn-prev" (click)="prevStep()" [disabled]="currentStep === 1">
+        <span class="material-icons">arrow_back</span> Previous
+      </button>
+      <button type="button" class="btn-next-step" (click)="nextStep()"
+        [disabled]="(currentStep === 1 && !step1Valid) || (currentStep === 2 && !step2Valid)">
+        Next <span class="material-icons">arrow_forward</span>
+      </button>
+    </div>
+
+  </div>
+</div>

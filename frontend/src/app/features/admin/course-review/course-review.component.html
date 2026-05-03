@@ -1,0 +1,129 @@
+<div class="admin-page">
+  <div class="container">
+
+    <div class="page-header">
+      <div>
+        <h1>Course Review</h1>
+        <p>{{ courses.length }} course{{ courses.length !== 1 ? 's' : '' }} pending approval</p>
+      </div>
+    </div>
+
+    <!-- Split layout -->
+    <div class="review-layout" [class.panel-open]="selectedCourse">
+
+      <!-- Course List -->
+      <div class="review-list">
+        <ng-container *ngIf="isLoading">
+          <div class="course-card skeleton-card" *ngFor="let i of [1,2,3]">
+            <div class="skeleton" style="height:80px;border-radius:8px;margin-bottom:12px"></div>
+            <div class="skeleton" style="height:14px;width:70%;margin-bottom:6px"></div>
+            <div class="skeleton" style="height:12px;width:40%"></div>
+          </div>
+        </ng-container>
+
+        <div class="course-card" *ngFor="let c of courses" [class.selected]="selectedCourse?.courseId === c.courseId"
+          (click)="selectCourse(c)">
+          <div class="course-thumb">
+            <img *ngIf="c.thumbnailUrl" [src]="c.thumbnailUrl" [alt]="c.title" />
+            <div class="thumb-ph" *ngIf="!c.thumbnailUrl">
+              <span class="material-icons">play_lesson</span>
+            </div>
+          </div>
+          <div class="course-body">
+            <div class="course-title">{{ c.title }}</div>
+            <div class="course-meta">
+              <span>by {{ c.instructorName }}</span>
+              <span class="dot">·</span>
+              <span class="cat-badge">{{ c.categoryName }}</span>
+              <span class="dot">·</span>
+              <span class="time-ago">{{ getTimeAgo(c.submittedAt) }}</span>
+            </div>
+            <div class="course-stats">
+              <span><span class="material-icons">layers</span>{{ c.totalSections }} sections</span>
+              <span><span class="material-icons">play_circle</span>{{ c.totalLessons }} lessons</span>
+              <span><span class="material-icons">payments</span>₹{{ c.price | number }}</span>
+            </div>
+          </div>
+          <div class="card-chevron">
+            <span class="material-icons">chevron_right</span>
+          </div>
+        </div>
+
+        <div class="empty-state" *ngIf="!isLoading && courses.length === 0">
+          <span class="material-icons">task_alt</span>
+          <p>All caught up! No courses pending review.</p>
+        </div>
+      </div>
+
+      <!-- Detail Panel -->
+      <div class="review-panel" *ngIf="selectedCourse">
+        <div class="panel-header">
+          <h3>Review Course</h3>
+          <button class="close-btn" (click)="closePanel()">
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+
+        <div class="panel-thumb">
+          <img *ngIf="selectedCourse.thumbnailUrl" [src]="selectedCourse.thumbnailUrl" [alt]="selectedCourse.title"/>
+          <div class="thumb-ph large" *ngIf="!selectedCourse.thumbnailUrl">
+            <span class="material-icons">play_lesson</span>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <h2 class="panel-title">{{ selectedCourse.title }}</h2>
+          <p class="panel-subtitle">{{ selectedCourse.subtitle }}</p>
+
+          <div class="panel-meta-grid">
+            <div class="meta-item">
+              <span class="material-icons">person</span>
+              <div><div class="meta-label">Instructor</div><div class="meta-val">{{ selectedCourse.instructorName }}</div></div>
+            </div>
+            <div class="meta-item">
+              <span class="material-icons">category</span>
+              <div><div class="meta-label">Category</div><div class="meta-val">{{ selectedCourse.categoryName }}</div></div>
+            </div>
+            <div class="meta-item">
+              <span class="material-icons">signal_cellular_alt</span>
+              <div><div class="meta-label">Level</div><div class="meta-val">{{ selectedCourse.level }}</div></div>
+            </div>
+            <div class="meta-item">
+              <span class="material-icons">payments</span>
+              <div><div class="meta-label">Price</div><div class="meta-val">₹{{ selectedCourse.price | number }}</div></div>
+            </div>
+            <div class="meta-item">
+              <span class="material-icons">layers</span>
+              <div><div class="meta-label">Sections</div><div class="meta-val">{{ selectedCourse.totalSections }}</div></div>
+            </div>
+            <div class="meta-item">
+              <span class="material-icons">play_circle</span>
+              <div><div class="meta-label">Lessons</div><div class="meta-val">{{ selectedCourse.totalLessons }}</div></div>
+            </div>
+          </div>
+
+          <!-- Reject reason -->
+          <div class="reject-section">
+            <label class="reject-label">Rejection Reason <span class="optional">(required to reject)</span></label>
+            <textarea class="reject-textarea" [(ngModel)]="rejectReason" rows="3"
+              placeholder="Explain to the instructor why the course was rejected…"></textarea>
+          </div>
+
+          <!-- Decision buttons -->
+          <div class="decision-btns">
+            <button class="btn-reject" (click)="rejectCourse(selectedCourse.courseId)"
+              [disabled]="actionCourseId === selectedCourse.courseId">
+              <span class="material-icons">close</span> Reject
+            </button>
+            <button class="btn-approve" (click)="approveCourse(selectedCourse.courseId)"
+              [disabled]="actionCourseId === selectedCourse.courseId">
+              <span class="material-icons">check</span> Approve & Publish
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>

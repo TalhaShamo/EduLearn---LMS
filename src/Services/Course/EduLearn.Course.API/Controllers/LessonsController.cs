@@ -2,11 +2,13 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.IdentityModel.Tokens;
 using EduLearn.Course.API.Application.Commands;
 using EduLearn.Course.API.Application.DTOs;
 using EduLearn.Course.API.Application.Interfaces;
 using EduLearn.Shared.Models;
 using System.Security.Claims;
+using System.Text;
 
 namespace EduLearn.Course.API.Controllers;
 
@@ -40,7 +42,7 @@ public class LessonsController : ControllerBase
     {
         var instructorId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
         var lesson = await _mediator.Send(new AddLessonCommand(
-            sectionId, courseId, instructorId, req.Title, req.Type, req.SortOrder, req.IsFreePreview));
+            sectionId, courseId, instructorId, req.Title, req.GetLessonType(), req.SortOrder, req.IsFreePreview));
         return StatusCode(201, ApiResponse<LessonDto>.Created(lesson));
     }
 
@@ -64,13 +66,43 @@ public class LessonsController : ControllerBase
         return Ok(ApiResponse<string>.Ok(path, "Video uploaded successfully."));
     }
 
-    // GET /api/v1/lessons/{lessonId}/stream
+    // GET /api/v1/lessons/{lessonId}/stream?token=xxx
     // Byte-range video streaming — Angular <video> tag hits this endpoint
+    // Token passed as query param since <video> tag cannot send Authorization header
     [HttpGet("lessons/{lessonId:guid}/stream")]
-    [Authorize] // Must be enrolled (enrollment check done via separate call)
-    public async Task<IActionResult> StreamVideo(Guid lessonId,
-        [FromServices] ILessonRepository lessonRepo)
+    [AllowAnonymous] // We'll manually validate token from query string
+    public async Task<IActionResult> StreamVideo(
+        Guid lessonId,
+        [FromQuery] string? token,
+        [FromServices] ILessonRepository lessonRepo,
+        [FromServices] IConfiguration config)
     {
+        // Validate JWT token from query parameter
+        if (string.IsNullOrEmpty(token))
+            return Unauthorized(ApiResponse<string>.Fail("Authentication token required."));
+
+        try
+        {
+            var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(config["Jwt:SecretKey"]!);
+            
+            tokenHandler.ValidateToken(token, new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = config["Jwt:Issuer"],
+                ValidAudience = config["Jwt:Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ClockSkew = TimeSpan.Zero
+            }, out _);
+        }
+        catch
+        {
+            return Unauthorized(ApiResponse<string>.Fail("Invalid or expired token."));
+        }
+
         var lesson = await lessonRepo.GetByIdAsync(lessonId);
         if (lesson?.VideoPath is null)
             return NotFound(ApiResponse<string>.Fail("Video not found."));

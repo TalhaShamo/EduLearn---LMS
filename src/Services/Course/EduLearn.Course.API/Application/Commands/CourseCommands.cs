@@ -5,15 +5,18 @@ using CourseEntity = EduLearn.Course.API.Domain.Entities.Course;
 using EduLearn.Course.API.Domain.Entities;
 using EduLearn.Course.API.Domain.Enums;
 using EduLearn.Shared.Exceptions;
+using EduLearn.Course.API.Infrastructure.Data;
 
 namespace EduLearn.Course.API.Application.Commands;
 
 // ── CREATE COURSE ─────────────────────────────────────────────
 public record CreateCourseCommand(
     Guid   InstructorId,
-    string Title, string Description,
+    string Title, string? Subtitle, string Description,
     string Category, string Level,
-    decimal Price, string Language
+    decimal Price, string Language,
+    List<string>? Tags, List<string>? LearningObjectives,
+    List<CreateSectionRequest>? Sections
 ) : IRequest<CourseDetailDto>;
 
 public class CreateCourseCommandHandler : IRequestHandler<CreateCourseCommand, CourseDetailDto>
@@ -27,15 +30,42 @@ public class CreateCourseCommandHandler : IRequestHandler<CreateCourseCommand, C
         var course = CourseEntity.Create(cmd.InstructorId, cmd.Title, cmd.Description,
                                    cmd.Category, level, cmd.Price, cmd.Language);
 
+        // Set additional metadata
+        course.Update(cmd.Title, cmd.Description, cmd.Category, level, cmd.Price, cmd.Subtitle);
+        course.SetMetadata(tags: cmd.Tags ?? new List<string>(), learningObjectives: cmd.LearningObjectives ?? new List<string>());
+
+        // Add sections and lessons if provided
+        if (cmd.Sections != null && cmd.Sections.Any())
+        {
+            foreach (var sectionReq in cmd.Sections)
+            {
+                var section = Section.Create(course.CourseId, sectionReq.Title, sectionReq.SortOrder);
+                course.Sections.Add(section);
+
+                if (sectionReq.Lessons != null && sectionReq.Lessons.Any())
+                {
+                    foreach (var lessonReq in sectionReq.Lessons)
+                    {
+                        var lessonType = Enum.Parse<LessonType>(lessonReq.GetLessonType(), ignoreCase: true);
+                        var lesson = Lesson.Create(section.SectionId, lessonReq.Title, lessonType, lessonReq.SortOrder);
+                        lesson.SetFreePreview(lessonReq.IsFreePreview);
+                        section.Lessons.Add(lesson);
+                    }
+                }
+            }
+        }
+
         await _repo.AddAsync(course);
         await _repo.SaveChangesAsync();
         return MapToDetail(course);
     }
 
     internal static CourseDetailDto MapToDetail(CourseEntity c) => new(
-        c.CourseId, c.Title, c.Slug, c.Description, c.Category,
+        c.CourseId, c.Title, c.Subtitle, c.Slug, c.Description, c.Category, c.Category,
         c.Level.ToString(), c.Price, c.Language, c.Status.ToString(),
-        c.ThumbnailUrl, c.AdminFeedback, c.InstructorId, c.CreatedAt, c.UpdatedAt,
+        c.ThumbnailUrl, c.AdminFeedback, c.InstructorId, c.InstructorName,
+        c.EnrollmentCount, c.AverageRating, c.ReviewCount, c.DurationMinutes,
+        c.Tags, c.LearningObjectives, c.CreatedAt, c.UpdatedAt,
         c.Sections.Select(s => new SectionDto(s.SectionId, s.Title, s.SortOrder,
             s.Lessons.Select(l => new LessonDto(l.LessonId, l.Title, l.Type.ToString(),
                 l.VideoPath, l.DurationSeconds, l.IsFreePreview, l.SortOrder, l.IsPublished)))));
@@ -44,18 +74,24 @@ public class CreateCourseCommandHandler : IRequestHandler<CreateCourseCommand, C
 // ── UPDATE COURSE ─────────────────────────────────────────────
 public record UpdateCourseCommand(
     Guid CourseId, Guid InstructorId,
-    string Title, string Description,
-    string Category, string Level, decimal Price
+    string Title, string? Subtitle, string Description,
+    string Category, string Level, decimal Price,
+    List<string>? Tags, List<string>? LearningObjectives,
+    List<CreateSectionRequest>? Sections
 ) : IRequest<CourseDetailDto>;
 
 public class UpdateCourseCommandHandler : IRequestHandler<UpdateCourseCommand, CourseDetailDto>
 {
     private readonly ICourseRepository _repo;
-    public UpdateCourseCommandHandler(ICourseRepository repo) => _repo = repo;
+
+    public UpdateCourseCommandHandler(ICourseRepository repo)
+    { 
+        _repo = repo; 
+    }
 
     public async Task<CourseDetailDto> Handle(UpdateCourseCommand cmd, CancellationToken ct)
     {
-        var course = await _repo.GetWithSectionsAsync(cmd.CourseId)
+        var course = await _repo.GetByIdAsync(cmd.CourseId)
                      ?? throw new NotFoundException("Course", cmd.CourseId);
 
         // Only the owning instructor can update their course
@@ -63,10 +99,18 @@ public class UpdateCourseCommandHandler : IRequestHandler<UpdateCourseCommand, C
             throw new ForbiddenException("You can only update your own courses.");
 
         var level = Enum.Parse<CourseLevel>(cmd.Level, ignoreCase: true);
-        course.Update(cmd.Title, cmd.Description, cmd.Category, level, cmd.Price);
+        course.Update(cmd.Title, cmd.Description, cmd.Category, level, cmd.Price, cmd.Subtitle);
+        course.SetMetadata(tags: cmd.Tags ?? new List<string>(), learningObjectives: cmd.LearningObjectives ?? new List<string>());
+
+        // Don't update sections - they are managed separately via video upload
+        // This avoids the concurrency exception when updating after video upload
+
         _repo.Update(course);
         await _repo.SaveChangesAsync();
-        return CreateCourseCommandHandler.MapToDetail(course);
+        
+        // Reload with sections for response
+        var updatedCourse = await _repo.GetWithSectionsAsync(cmd.CourseId);
+        return CreateCourseCommandHandler.MapToDetail(updatedCourse!);
     }
 }
 
@@ -224,5 +268,28 @@ public class UploadVideoCommandHandler : IRequestHandler<UploadVideoCommand, str
         await _lessonRepo.SaveChangesAsync();
 
         return path;
+    }
+}
+
+// ── DELETE COURSE ─────────────────────────────────────────────
+public record DeleteCourseCommand(Guid CourseId, Guid InstructorId) : IRequest;
+
+public class DeleteCourseCommandHandler : IRequestHandler<DeleteCourseCommand>
+{
+    private readonly ICourseRepository _repo;
+    public DeleteCourseCommandHandler(ICourseRepository repo) => _repo = repo;
+
+    public async Task Handle(DeleteCourseCommand cmd, CancellationToken ct)
+    {
+        var course = await _repo.GetByIdAsync(cmd.CourseId)
+                     ?? throw new NotFoundException("Course", cmd.CourseId);
+
+        // Only the owning instructor can delete their course
+        if (course.InstructorId != cmd.InstructorId)
+            throw new ForbiddenException("You can only delete your own courses.");
+
+        // Allow deletion of courses in any status (Draft, Published, PendingReview, Archived)
+        _repo.Delete(course);
+        await _repo.SaveChangesAsync();
     }
 }

@@ -1,0 +1,108 @@
+<div class="admin-page">
+  <div class="container">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <h1>Admin Dashboard</h1>
+        <p>Platform-wide overview and management</p>
+      </div>
+      <div class="header-actions">
+        <a routerLink="/admin/courses" class="btn-admin outline">
+          <span class="material-icons">rate_review</span> Review Courses
+        </a>
+        <a routerLink="/admin/users" class="btn-admin primary">
+          <span class="material-icons">manage_accounts</span> Manage Users
+        </a>
+      </div>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="stats-grid">
+      <ng-container *ngIf="isLoading">
+        <div class="stat-card skeleton-card" *ngFor="let i of [1,2,3,4]">
+          <div class="skeleton sk-icon"></div>
+          <div style="flex:1"><div class="skeleton sk-val"></div><div class="skeleton sk-lbl"></div></div>
+        </div>
+      </ng-container>
+      <ng-container *ngIf="!isLoading">
+        <div class="stat-card" *ngFor="let s of statCards"
+          [style.--stat-color]="s.color" [style.--stat-bg]="s.bg">
+          <div class="stat-icon-wrap"><span class="material-icons">{{ s.icon }}</span></div>
+          <div class="stat-info">
+            <div class="stat-value">{{ s.prefix }}{{ getStatValue(s.key) }}</div>
+            <div class="stat-label">{{ s.label }}</div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="admin-grid" *ngIf="!isLoading">
+
+      <!-- Pending Course Reviews -->
+      <div class="admin-card">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="material-icons">pending_actions</span>
+            <h3>Pending Course Reviews</h3>
+            <span class="badge-count">{{ pendingCourses.length }}</span>
+          </div>
+          <a routerLink="/admin/courses" class="view-all-link">View all →</a>
+        </div>
+        <div class="pending-list">
+          <div class="pending-row" *ngFor="let c of pendingCourses">
+            <div class="pending-icon">
+              <span class="material-icons">ondemand_video</span>
+            </div>
+            <div class="pending-info">
+              <div class="pending-title">{{ c.title }}</div>
+              <div class="pending-meta">
+                by {{ c.instructorName }} · {{ c.categoryName }}
+              </div>
+            </div>
+            <div class="pending-actions">
+              <a [routerLink]="['/admin/courses']" [queryParams]="{courseId: c.courseId}" class="action-pill approve">
+                <span class="material-icons">check</span>
+              </a>
+              <a [routerLink]="['/admin/courses']" [queryParams]="{courseId: c.courseId}" class="action-pill reject">
+                <span class="material-icons">close</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Users -->
+      <div class="admin-card">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="material-icons">person_add</span>
+            <h3>Recent Registrations</h3>
+          </div>
+          <a routerLink="/admin/users" class="view-all-link">View all →</a>
+        </div>
+        <div class="user-list">
+          <div class="user-row" *ngFor="let u of recentUsers">
+            <div class="user-avatar" [style.background]="u.role === 'Instructor' ? 'rgba(124,58,237,0.1)' : 'rgba(57,73,171,0.1)'">
+              <span class="material-icons" [style.color]="u.role === 'Instructor' ? '#7C3AED' : '#3949AB'">
+                {{ u.role === 'Instructor' ? 'school' : 'person' }}
+              </span>
+            </div>
+            <div class="user-info">
+              <div class="user-name">{{ u.fullName }}</div>
+              <div class="user-email">{{ u.email }}</div>
+            </div>
+            <div class="user-badges">
+              <span class="role-badge" [class.instructor]="u.role === 'Instructor'">{{ u.role }}</span>
+              <span class="status-pill banned" *ngIf="u.isBanned">Banned</span>
+              <span class="status-pill unverified" *ngIf="!u.isVerified && !u.isBanned">Unverified</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,377 @@
+// ─── Page Shell ──────────────────────────────────────────────────────────────
+.auth-page {
+  display: flex;
+  min-height: 100vh;
+}
+
+// ─── Left Brand Panel ────────────────────────────────────────────────────────
+.auth-brand {
+  flex: 0 0 46%;
+  background: var(--gradient-hero);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3xl) var(--space-2xl);
+
+  @media (max-width: 900px) { display: none; }
+}
+
+.brand-content {
+  position: relative;
+  z-index: 2;
+  color: #fff;
+  max-width: 400px;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-2xl);
+
+  .logo-icon {
+    width: 42px;
+    height: 42px;
+    background: rgba(255,255,255,0.2);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.25rem;
+    backdrop-filter: blur(8px);
+  }
+
+  .logo-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+}
+
+.brand-headline {
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: #fff;
+  margin-bottom: var(--space-md);
+}
+
+.brand-sub {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.75);
+  margin-bottom: var(--space-2xl);
+  line-height: 1.7;
+}
+
+.brand-stats {
+  display: flex;
+  gap: var(--space-2xl);
+  margin-bottom: var(--space-2xl);
+
+  .stat {
+    text-align: center;
+
+    .stat-num {
+      display: block;
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--color-accent);
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.65);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+  }
+}
+
+.brand-testimonial {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-start;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md) var(--space-lg);
+  border: 1px solid rgba(255,255,255,0.15);
+
+  .testimonial-avatar {
+    width: 44px;
+    height: 44px;
+    background: var(--color-accent);
+    color: var(--color-primary-dark);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+
+  .testimonial-text {
+    font-size: 0.875rem;
+    color: rgba(255,255,255,0.9);
+    font-style: italic;
+    margin-bottom: 4px;
+  }
+
+  .testimonial-author {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.6);
+    font-weight: 500;
+  }
+}
+
+// Decorative floating circles
+.brand-circles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  .circle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+
+  .circle-1 { width: 400px; height: 400px; top: -100px; right: -150px; }
+  .circle-2 { width: 250px; height: 250px; bottom: 60px; left: -80px; }
+  .circle-3 { width: 150px; height: 150px; bottom: 200px; right: 20px; background: rgba(255,179,0,0.1); }
+}
+
+// ─── Right Form Panel ─────────────────────────────────────────────────────────
+.auth-form-panel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2xl) var(--space-lg);
+  background: #fff;
+  overflow-y: auto;
+}
+
+.form-container {
+  width: 100%;
+  max-width: 440px;
+}
+
+.form-header {
+  margin-bottom: var(--space-2xl);
+
+  h2 {
+    font-size: 1.875rem;
+    font-weight: 800;
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-xs);
+  }
+
+  p {
+    color: var(--color-text-secondary);
+    font-size: 0.9375rem;
+  }
+}
+
+// ─── Alert ───────────────────────────────────────────────────────────────────
+.alert {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  margin-bottom: var(--space-lg);
+
+  &.alert-error {
+    background: rgba(239,68,68,0.08);
+    color: var(--color-error);
+    border: 1px solid rgba(239,68,68,0.2);
+  }
+}
+
+// ─── Form Fields ─────────────────────────────────────────────────────────────
+.form-field {
+  margin-bottom: var(--space-lg);
+}
+
+.field-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-sm);
+}
+
+.field-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-md);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  background: var(--color-bg);
+
+  &:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(57,73,171,0.12);
+    background: #fff;
+  }
+
+  &.field-error {
+    border-color: var(--color-error);
+    &:focus-within { box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
+  }
+
+  .field-icon {
+    font-size: 1.1rem;
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+  }
+
+  input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 14px 0;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9375rem;
+    color: var(--color-text-primary);
+
+    &::placeholder { color: var(--color-text-muted); }
+  }
+}
+
+.toggle-pw {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  padding: 0;
+  color: var(--color-text-muted);
+
+  &:hover { color: var(--color-text-secondary); }
+}
+
+.field-hint {
+  display: block;
+  font-size: 0.8125rem;
+  margin-top: 6px;
+  color: var(--color-text-secondary);
+
+  &.error { color: var(--color-error); }
+}
+
+.forgot-link {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}
+
+// ─── Checkbox ────────────────────────────────────────────────────────────────
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-xl);
+
+  input[type="checkbox"] { display: none; }
+
+  .checkbox-custom {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--color-border);
+    border-radius: 4px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+  }
+
+  input:checked + .checkbox-custom {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+
+    &::after {
+      content: '';
+      width: 5px;
+      height: 9px;
+      border: 2px solid #fff;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg) translate(-1px, -1px);
+      display: block;
+    }
+  }
+}
+
+// ─── Submit Button ────────────────────────────────────────────────────────────
+.btn-submit {
+  width: 100%;
+  padding: 15px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  letter-spacing: 0.01em;
+
+  &:hover:not(:disabled) {
+    background: var(--color-primary-dark);
+    box-shadow: 0 4px 16px rgba(57,73,171,0.35);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .spin {
+    animation: rotate 1s linear infinite;
+  }
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+// ─── Footer ──────────────────────────────────────────────────────────────────
+.form-footer {
+  text-align: center;
+  margin-top: var(--space-xl);
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+
+  .link-accent {
+    color: var(--color-primary);
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover { text-decoration: underline; }
+  }
+}

@@ -1,0 +1,249 @@
+<!-- ─── HERO ─────────────────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-bg-shapes">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
+    <div class="floating-icons">
+      <span class="fi fi-1 material-icons">code</span>
+      <span class="fi fi-2 material-icons">bar_chart</span>
+      <span class="fi fi-3 material-icons">brush</span>
+      <span class="fi fi-4 material-icons">cloud</span>
+      <span class="fi fi-5 material-icons">psychology</span>
+    </div>
+  </div>
+
+  <div class="container hero-inner">
+    <div class="hero-text">
+      <div class="hero-badge">
+        <span class="material-icons">bolt</span>
+        <span>New courses added every week</span>
+      </div>
+      <h1 class="hero-headline">
+        Learn <span class="highlight">in-demand skills</span><br>
+        from the world's best experts
+      </h1>
+      <p class="hero-sub">
+        Master technology, design, business and more with structured courses,
+        hands-on projects, and verified certificates.
+      </p>
+
+      <div class="hero-search">
+        <span class="material-icons search-icon">search</span>
+        <input
+          type="text"
+          placeholder="What do you want to learn today?"
+          id="hero-search-input"
+          (keyup.enter)="null"
+        />
+        <button class="search-btn" routerLink="/courses">Explore Courses</button>
+      </div>
+
+      <div class="hero-tags">
+        <span>Popular:</span>
+        <a routerLink="/courses" class="tag">Angular</a>
+        <a routerLink="/courses" class="tag">Python</a>
+        <a routerLink="/courses" class="tag">Machine Learning</a>
+        <a routerLink="/courses" class="tag">AWS</a>
+        <a routerLink="/courses" class="tag">React</a>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="hero-card main-card">
+        <div class="card-header-row">
+          <div class="avatar-stack">
+            <span class="av">AS</span><span class="av">JP</span><span class="av">MK</span>
+          </div>
+          <span class="enrolled-tag">12.4K enrolled</span>
+        </div>
+        <div class="course-thumb">
+          <div class="thumb-gfx">
+            <span class="material-icons">play_circle</span>
+          </div>
+        </div>
+        <h4>Complete Angular 17 Masterclass</h4>
+        <div class="stars-row">
+          <span class="material-icons star" *ngFor="let s of [1,2,3,4,5]">star</span>
+          <span class="rating-num">4.8</span>
+        </div>
+      </div>
+
+      <div class="hero-card side-card cert-card">
+        <span class="material-icons cert-icon">workspace_premium</span>
+        <div>
+          <div class="side-title">Certificate earned!</div>
+          <div class="side-sub">Python for Data Science</div>
+        </div>
+      </div>
+
+      <div class="hero-card side-card progress-card">
+        <div class="progress-info">
+          <span class="material-icons">trending_up</span>
+          <span>72% complete</span>
+        </div>
+        <div class="mini-progress">
+          <div class="mini-fill" style="width:72%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── STATS ───────────────────────────────────────────────────────────────── -->
+<section class="stats-strip">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-item" *ngFor="let s of stats">
+        <span class="material-icons stat-icon">{{ s.icon }}</span>
+        <span class="stat-num">{{ s.value }}</span>
+        <span class="stat-label">{{ s.label }}</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── CATEGORIES ─────────────────────────────────────────────────────────── -->
+<section class="page-section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-label">Browse by topic</div>
+      <h2>Explore Categories</h2>
+      <p>Find the perfect course for your career goals</p>
+    </div>
+    <div class="categories-grid">
+      <a
+        class="cat-card"
+        routerLink="/courses"
+        *ngFor="let cat of categories"
+        [style.--cat-color]="cat.color"
+        [style.--cat-bg]="cat.bg"
+      >
+        <div class="cat-icon-wrap">
+          <span class="material-icons">{{ cat.icon }}</span>
+        </div>
+        <span class="cat-name">{{ cat.name }}</span>
+        <span class="material-icons cat-arrow">arrow_forward</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FEATURED COURSES ───────────────────────────────────────────────────── -->
+<section class="page-section" style="background: var(--color-surface-2); margin: 0; padding-block: var(--space-3xl);">
+  <div class="container">
+    <div class="section-header flex-between" style="flex-wrap:wrap; gap:var(--space-md)">
+      <div>
+        <div class="section-label">Hand-picked for you</div>
+        <h2>Featured Courses</h2>
+      </div>
+      <a routerLink="/courses" class="btn btn-outline">View all courses <span class="material-icons">arrow_forward</span></a>
+    </div>
+
+    <!-- Skeleton while loading -->
+    <div class="courses-grid" *ngIf="isLoading">
+      <div class="course-card skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8]">
+        <div class="skeleton thumb-skel"></div>
+        <div class="card-body">
+          <div class="skeleton" style="height:14px;width:60%;margin-bottom:8px"></div>
+          <div class="skeleton" style="height:18px;width:90%;margin-bottom:6px"></div>
+          <div class="skeleton" style="height:14px;width:75%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actual cards -->
+    <div class="courses-grid" *ngIf="!isLoading">
+      <a
+        class="course-card card card-hover"
+        *ngFor="let course of featuredCourses"
+        [routerLink]="['/courses', course.slug]"
+      >
+        <div class="course-thumb-wrap">
+          <img
+            *ngIf="course.thumbnailUrl"
+            [src]="course.thumbnailUrl"
+            [alt]="course.title"
+            class="course-thumb"
+          />
+          <div class="course-thumb-placeholder" *ngIf="!course.thumbnailUrl">
+            <span class="material-icons">play_lesson</span>
+          </div>
+          <span class="level-badge" [class]="'level-' + course.level.toLowerCase()">{{ course.level }}</span>
+        </div>
+        <div class="course-body">
+          <div class="course-category">{{ course.category }}</div>
+          <h3 class="course-title">{{ course.title }}</h3>
+          <div class="course-instructor">
+            <div class="instructor-av">{{ getInitials(course.instructorName || '') }}</div>
+            <span>{{ course.instructorName }}</span>
+          </div>
+          <div class="course-meta">
+            <div class="rating">
+              <span class="material-icons star-sm">star</span>
+              <span class="r-num">{{ course.rating?.toFixed(1) }}</span>
+              <span class="r-count">({{ (course.enrollmentCount || 0) | number }})</span>
+            </div>
+            <div class="price">₹{{ course.price | number }}</div>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── HOW IT WORKS ────────────────────────────────────────────────────────── -->
+<section class="page-section">
+  <div class="container">
+    <div class="section-header text-center" style="margin: 0 auto var(--space-3xl); max-width: 560px;">
+      <div class="section-label">Simple process</div>
+      <h2>How EduLearn Works</h2>
+      <p>From signup to certified — in just a few simple steps</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <span class="material-icons step-icon">person_add</span>
+        <h4>Create an Account</h4>
+        <p>Sign up for free in 30 seconds. No credit card required.</p>
+      </div>
+      <div class="step-arrow"><span class="material-icons">arrow_forward</span></div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <span class="material-icons step-icon">search</span>
+        <h4>Browse & Enroll</h4>
+        <p>Discover courses that match your goals and budget.</p>
+      </div>
+      <div class="step-arrow"><span class="material-icons">arrow_forward</span></div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <span class="material-icons step-icon">play_circle</span>
+        <h4>Learn at Your Pace</h4>
+        <p>Watch videos, read articles, and complete hands-on quizzes.</p>
+      </div>
+      <div class="step-arrow"><span class="material-icons">arrow_forward</span></div>
+      <div class="step-card">
+        <div class="step-num">04</div>
+        <span class="material-icons step-icon">workspace_premium</span>
+        <h4>Earn Certificate</h4>
+        <p>Share your verified certificate with employers and on LinkedIn.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── CTA BANNER ─────────────────────────────────────────────────────────── -->
+<section class="cta-banner">
+  <div class="container">
+    <div class="cta-inner">
+      <div>
+        <h2>Ready to start learning?</h2>
+        <p>Join 50,000+ students already transforming their careers with EduLearn.</p>
+      </div>
+      <div class="cta-actions">
+        <a routerLink="/auth/register" class="btn btn-accent btn-lg">Get started free</a>
+        <a routerLink="/courses" class="btn btn-outline-white btn-lg">Browse courses</a>
+      </div>
+    </div>
+  </div>
+</section>
