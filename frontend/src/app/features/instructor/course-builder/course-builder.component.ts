@@ -170,12 +170,34 @@ export class CourseBuilderComponent implements OnInit, OnDestroy {
   }
 
   // ─── Thumbnail ────────────────────────────────────────────────────────────
+  thumbnailFile: File | null = null;
+  
   onThumbnailChange(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
+    
+    // Store the file for upload
+    this.thumbnailFile = file;
+    
+    // Show preview
     const reader = new FileReader();
     reader.onload = () => { this.thumbnailPreview = reader.result as string; };
     reader.readAsDataURL(file);
+  }
+  
+  uploadThumbnail(courseId: string): void {
+    if (!this.thumbnailFile) return;
+    
+    const formData = new FormData();
+    formData.append('file', this.thumbnailFile);
+    
+    this.http.post(
+      `${environment.apiUrl}/courses/${courseId}/upload-thumbnail`,
+      formData
+    ).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => console.log('Thumbnail uploaded successfully'),
+      error: () => console.error('Thumbnail upload failed')
+    });
   }
 
   // ─── Navigation ───────────────────────────────────────────────────────────
@@ -230,6 +252,11 @@ export class CourseBuilderComponent implements OnInit, OnDestroy {
               lessonControl?.patchValue({ lessonId: lesson.lessonId });
             });
           });
+        }
+        
+        // Upload thumbnail if one was selected
+        if (courseId && this.thumbnailFile) {
+          this.uploadThumbnail(courseId);
         }
 
         // If publishing, call submit-review endpoint

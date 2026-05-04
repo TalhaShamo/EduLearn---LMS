@@ -1,7 +1,7 @@
 <a class="course-card" [routerLink]="['/courses', course.slug]">
   <!-- Thumbnail -->
   <div class="thumb-wrap">
-    <img *ngIf="course.thumbnailUrl" [src]="course.thumbnailUrl" [alt]="course.title" class="thumb-img" />
+    <img *ngIf="course.thumbnailUrl" [src]="getThumbnailUrl()" [alt]="course.title" class="thumb-img" />
     <div *ngIf="!course.thumbnailUrl" class="thumb-placeholder">
       <span class="material-icons">play_lesson</span>
     </div>
@@ -22,9 +22,11 @@
 
     <div class="footer-row">
       <div class="stats">
-        <span class="material-icons">schedule</span>
-        <span>{{ course.durationMinutes | duration }}</span>
-        <span class="dot">·</span>
+        <ng-container *ngIf="course.durationMinutes > 0">
+          <span class="material-icons">schedule</span>
+          <span>{{ course.durationMinutes | duration }}</span>
+          <span class="dot">·</span>
+        </ng-container>
         <span class="material-icons">people</span>
         <span>{{ course.enrollmentCount | number }}</span>
       </div>

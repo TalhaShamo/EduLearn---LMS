@@ -6,6 +6,8 @@ using EduLearn.Course.API.Domain.Entities;
 using EduLearn.Course.API.Domain.Enums;
 using EduLearn.Shared.Exceptions;
 using EduLearn.Course.API.Infrastructure.Data;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Hosting;
 
 namespace EduLearn.Course.API.Application.Commands;
 
@@ -291,5 +293,56 @@ public class DeleteCourseCommandHandler : IRequestHandler<DeleteCourseCommand>
         // Allow deletion of courses in any status (Draft, Published, PendingReview, Archived)
         _repo.Delete(course);
         await _repo.SaveChangesAsync();
+    }
+}
+
+// ── UPLOAD THUMBNAIL ──────────────────────────────────────────
+public record UploadThumbnailCommand(
+    Guid CourseId, Guid InstructorId, IFormFile File
+) : IRequest<string>;   // Returns the thumbnail URL
+
+public class UploadThumbnailCommandHandler : IRequestHandler<UploadThumbnailCommand, string>
+{
+    private readonly ICourseRepository _repo;
+    private readonly IWebHostEnvironment _env;
+
+    public UploadThumbnailCommandHandler(ICourseRepository repo, IWebHostEnvironment env)
+    { _repo = repo; _env = env; }
+
+    public async Task<string> Handle(UploadThumbnailCommand cmd, CancellationToken ct)
+    {
+        var course = await _repo.GetByIdAsync(cmd.CourseId)
+                     ?? throw new NotFoundException("Course", cmd.CourseId);
+
+        if (course.InstructorId != cmd.InstructorId)
+            throw new ForbiddenException("You can only upload thumbnails to your own courses.");
+
+        // Validate file type
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+        var extension = Path.GetExtension(cmd.File.FileName).ToLowerInvariant();
+        if (!allowedExtensions.Contains(extension))
+            throw new InvalidOperationException("Only JPG, PNG, and WebP images are allowed.");
+
+        // Create thumbnails directory if it doesn't exist
+        var thumbnailsDir = Path.Combine(_env.WebRootPath, "thumbnails");
+        Directory.CreateDirectory(thumbnailsDir);
+
+        // Generate unique filename
+        var fileName = $"{cmd.CourseId}{extension}";
+        var filePath = Path.Combine(thumbnailsDir, fileName);
+
+        // Save file
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await cmd.File.CopyToAsync(stream, ct);
+        }
+
+        // Update course with thumbnail URL
+        var thumbnailUrl = $"/thumbnails/{fileName}";
+        course.SetThumbnail(thumbnailUrl);
+        _repo.Update(course);
+        await _repo.SaveChangesAsync();
+
+        return thumbnailUrl;
     }
 }

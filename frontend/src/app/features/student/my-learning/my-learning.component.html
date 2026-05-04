@@ -36,7 +36,7 @@
       <div class="enrollment-card" *ngFor="let e of filtered">
         <!-- Course Thumbnail -->
         <div class="card-thumb">
-          <img *ngIf="e.courseThumbnailUrl" [src]="e.courseThumbnailUrl" [alt]="e.courseTitle" />
+          <img *ngIf="e.courseThumbnailUrl" [src]="getFullThumbnailUrl(e.courseThumbnailUrl)" [alt]="e.courseTitle" />
           <div class="thumb-placeholder" *ngIf="!e.courseThumbnailUrl">
             <span class="material-icons">play_lesson</span>
           </div>

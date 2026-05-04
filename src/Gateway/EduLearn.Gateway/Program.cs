@@ -47,6 +47,9 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(
 
 // ── CORS: allow local frontend dev servers ────────────────────
 // `ng serve` may run on 4200/4201/etc, and devs often use 127.0.0.1 instead of localhost.
+builder.WebHost.ConfigureKestrel(o =>
+    o.Limits.MaxRequestBodySize = 4L * 1024 * 1024 * 1024); // 4 GB for video uploads
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Angular", policy =>
@@ -64,6 +67,10 @@ builder.Services.AddCors(options =>
 
 // ── OCELOT: register routing engine ──────────────────────────
 builder.Services.AddOcelot(builder.Configuration);
+
+// Allow large video uploads through gateway
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(o =>
+    o.MultipartBodyLengthLimit = 4L * 1024 * 1024 * 1024); // 4 GB
 
 var app = builder.Build();
 

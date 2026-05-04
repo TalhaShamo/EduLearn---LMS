@@ -119,6 +119,17 @@ public class CoursesController : ControllerBase
         await _mediator.Send(new DeleteCourseCommand(id, instructorId));
         return Ok(ApiResponse<string>.Ok("", "Course deleted successfully."));
     }
+    
+    // POST /api/v1/courses/{id}/upload-thumbnail — Upload course thumbnail
+    [HttpPost("{id:guid}/upload-thumbnail")]
+    [Authorize(Roles = "Instructor")]
+    public async Task<IActionResult> UploadThumbnail(Guid id, IFormFile file)
+    {
+        var instructorId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        await _mediator.Send(new UploadThumbnailCommand(id, instructorId, file));
+        return Ok(ApiResponse<string>.Ok("", "Thumbnail uploaded successfully."));
+    }
+    
     // GET /api/v1/courses/pending — Admin only
     [HttpGet("pending")]
     [Authorize(Roles = "Admin")]
